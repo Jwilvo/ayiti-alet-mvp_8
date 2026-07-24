@@ -1,0 +1,13 @@
+node_modules/
+dist/
+data.json
+.env
+*.tsbuildinfo
+backend/uploads/
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/
+frontend/android/local.properties
+frontend/ios/App/Pods/
+frontend/ios/App/build/
+frontend/ios/App/DerivedData/

@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ayiti_alet
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ayiti_alet_dev}
+      POSTGRES_DB: ayiti_alet
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ayiti_alet"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://ayiti_alet:${DB_PASSWORD:-ayiti_alet_dev}@db:5432/ayiti_alet
+      JWT_SECRET: ${JWT_SECRET:?Mete yon JWT_SECRET nan .env anvan ou deplwaye}
+      PORT: 4000
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  db_data:
+  uploads_data:

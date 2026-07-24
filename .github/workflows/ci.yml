@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: ayiti_alet
+          POSTGRES_PASSWORD: ayiti_alet_test
+          POSTGRES_DB: ayiti_alet
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ayiti_alet"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - name: Enstale depandans
+        working-directory: backend
+        run: npm ci
+      - name: Aplike schema SQL la
+        run: PGPASSWORD=ayiti_alet_test psql -h localhost -U ayiti_alet -d ayiti_alet -f backend/db/schema.sql
+      - name: Verifikasyon tip (TypeScript)
+        working-directory: backend
+        run: npx tsc --noEmit
+      - name: Bati pwodiksyon
+        working-directory: backend
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://ayiti_alet:ayiti_alet_test@localhost:5432/ayiti_alet
+          JWT_SECRET: ci-test-secret
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - name: Enstale depandans
+        working-directory: frontend
+        run: npm ci
+      - name: Verifikasyon tip (TypeScript)
+        working-directory: frontend
+        run: npx tsc -b
+      - name: Bati pwodiksyon
+        working-directory: frontend
+        run: npm run build

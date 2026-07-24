@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Ayiti Alèt</string>
+    <string name="title_activity_main">Ayiti Alèt</string>
+    <string name="package_name">com.ayitialet.app</string>
+    <string name="custom_url_scheme">com.ayitialet.app</string>
+</resources>
