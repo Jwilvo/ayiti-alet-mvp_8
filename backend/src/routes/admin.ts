@@ -5,10 +5,6 @@ import { requireAdmin } from "../middleware/auth";
 const router = Router();
 router.use(requireAdmin);
 
-// Vèsyon senp de "Deteksyon rapò ki repete" ki nan modil AI PRD a: 2 rapò se
-// posib doub si yo gen menm kategori, yo kreye nan mwens pase 45 minit youn
-// de lòt, e yo mwens pase 300 mèt apa — kalkile reyèlman ak ST_DWithin
-// PostGIS (jewodezik, pran kont kouvbi Latè a), pa yon apwoksimasyon.
 const DIST_MAKS_MÈT = 300;
 const TAN_MAKS_MIN = 45;
 
@@ -59,7 +55,7 @@ router.get("/reports", async (req, res, next) => {
       `SELECT r.id, r.user_id AS "userId", r.anonim, r.kategori, r.tit, r.deskripsyon,
               r.niveau_ijans AS "niveauIjans", r.statut,
               ST_Y(r.lokalizasyon::geometry) AS latitude, ST_X(r.lokalizasyon::geometry) AS longitude,
-              r.adrès, r.kreye_nan AS "kreyeNan",
+              r.adrès, r.komin, r.kreye_nan AS "kreyeNan",
               (SELECT COUNT(*)::int FROM report_confirmations c WHERE c.report_id = r.id) AS konfimasyon,
               (SELECT COUNT(*)::int FROM report_confirmations c WHERE c.report_id = r.id AND c.tip_aksyon = 'siyale') AS siyalman
        FROM reports r ${where}
@@ -84,7 +80,7 @@ router.patch("/reports/:id", async (req, res, next) => {
        RETURNING id, user_id AS "userId", anonim, kategori, tit, deskripsyon,
                  niveau_ijans AS "niveauIjans", statut,
                  ST_Y(lokalizasyon::geometry) AS latitude, ST_X(lokalizasyon::geometry) AS longitude,
-                 adrès, kreye_nan AS "kreyeNan"`,
+                 adrès, komin, kreye_nan AS "kreyeNan"`,
       [statut, req.params.id]
     );
     if (!rows[0]) return res.status(404).json({ erè: "Rapò a pa egziste." });
@@ -94,9 +90,6 @@ router.patch("/reports/:id", async (req, res, next) => {
   }
 });
 
-// Otojwenti (self-join) SQL ak ST_DWithin — jwenn tout pè rapò ki gen menm
-// kategori, ki tou pre (distans jewodezik reyèl, pa yon bwat kare), e ki
-// kreye nan menm ti fenèt tan an.
 router.get("/duplicates", async (_req, res, next) => {
   try {
     const { rows } = await pool.query(
@@ -113,7 +106,6 @@ router.get("/duplicates", async (_req, res, next) => {
 
     if (rows.length === 0) return res.json([]);
 
-    // Gwoupe pè yo ansanm lè yo pataje yon rapò (union-find senp)
     const paran = new Map<string, string>();
     function jwenn(x: string): string {
       if (!paran.has(x)) paran.set(x, x);

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
-import { api, clearSession, getSessionUser, saveSession, KontakIjans } from "../api";
+import KominSelect from "../components/KominSelect";
+import { api, clearSession, getSessionUser, saveSession, updateSessionUser, KontakIjans } from "../api";
 
 function KontakIjansEditor() {
   const [kontak, setKontak] = useState<KontakIjans[]>([]);
@@ -66,6 +67,41 @@ function KontakIjansEditor() {
   );
 }
 
+function ZònEditor({ komin, onSove }: { komin: string; onSove: (k: string) => void }) {
+  const [val, setVal] = useState(komin);
+  const [chaje, setChaje] = useState(false);
+  const [mesaj, setMesaj] = useState("");
+
+  async function sove() {
+    setChaje(true);
+    setMesaj("");
+    try {
+      const user = await api.updateMe({ komin: val });
+      updateSessionUser(user);
+      onSove(val);
+      setMesaj("Komin ou mete ajou ✔");
+    } catch (e: any) {
+      setMesaj(e.message);
+    } finally {
+      setChaje(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="section-title"><h2>Zòn mwen</h2></div>
+      <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: -6 }}>
+        Chwazi komin ou pou aplikasyon an ka montre w rapò nan zòn ou kòm "ijans", e rapò lòt zòn kòm "enfòmasyon" sèlman.
+      </p>
+      <KominSelect value={val} onChange={setVal} />
+      {mesaj && <div className="banner banner-ok" style={{ marginTop: 8 }}>{mesaj}</div>}
+      <button className="btn btn-primary btn-block" onClick={sove} disabled={chaje || !val}>
+        {chaje ? <span className="spinner" /> : "Sove komin mwen"}
+      </button>
+    </>
+  );
+}
+
 export default function Profile() {
   const [user, setUser] = useState(getSessionUser());
   const [mòd, setMòd] = useState<"login" | "register">("login");
@@ -120,6 +156,10 @@ export default function Profile() {
             </p>
           </div>
 
+          <ZònEditor komin={user.komin || ""} onSove={(k) => setUser({ ...user, komin: k })} />
+
+          <div style={{ height: 20 }} />
+
           <KontakIjansEditor />
 
           <button className="btn btn-ghost btn-block" onClick={dekonekte} style={{ marginTop: 16 }}>
@@ -138,7 +178,7 @@ export default function Profile() {
         <h1 style={{ fontSize: 20 }}>{mòd === "login" ? "Konekte" : "Kreye yon kont"}</h1>
         <p style={{ color: "var(--text-muted)", fontSize: 13.5, marginTop: 0 }}>
           Ou pa oblije gen yon kont pou fè yon rapò anonim, men yon kont pèmèt ou konfime rapò, mete kontak
-          ijans pou SOS, ak swiv istorik ou.
+          ijans pou SOS, ak wè alèt nan zòn ou.
         </p>
 
         <form onSubmit={soumèt}>
@@ -147,7 +187,7 @@ export default function Profile() {
               <label>Non konplè</label>
               <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Non ou" />
               <label>Komin</label>
-              <input value={komin} onChange={(e) => setKomin(e.target.value)} placeholder="Egzanp: Delmas" />
+              <KominSelect value={komin} onChange={setKomin} />
             </>
           )}
           <label>Nimewo telefòn</label>

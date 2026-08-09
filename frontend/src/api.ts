@@ -17,6 +17,7 @@ export interface Report {
   latitude: number;
   longitude: number;
   adrès?: string;
+  komin?: string;
   kreyeNan: string;
   media?: ReportMedia[];
   konfimasyon?: number;
@@ -34,7 +35,7 @@ export interface Place {
   longitude: number;
   komin?: string;
 }
-export interface CurrentUser { id: string; nom: string; telefon: string; komin?: string; wòl?: "sitwayen" | "admin"; }
+export interface CurrentUser { id: string; nom: string; telefon: string; komin?: string; katye?: string; wòl?: "sitwayen" | "admin"; }
 
 export interface AdminStats {
   totalRapò: number;
@@ -61,6 +62,8 @@ export interface SosStatus {
   longitude: number;
   istorik: { latitude: number; longitude: number; kreyeNan: string }[];
 }
+
+export interface KominZòn { depatman: string; komin: string; }
 
 function getToken() {
   return localStorage.getItem("ayiti_alet_token");
@@ -92,8 +95,13 @@ export const api = {
   login: (body: { telefon: string; motDePasse: string }) =>
     request<{ token: string; user: CurrentUser }>("/auth/login", { method: "POST", body: JSON.stringify(body) }),
 
-  listReports: (params: { kategori?: string; niveauIjans?: string; limit?: number } = {}) => {
-    const qs = new URLSearchParams(params as any).toString();
+  me: () => request<CurrentUser>("/auth/me"),
+
+  updateMe: (body: { komin?: string; katye?: string }) =>
+    request<CurrentUser>("/auth/me", { method: "PATCH", body: JSON.stringify(body) }),
+
+  listReports: (params: { kategori?: string; niveauIjans?: string; komin?: string; limit?: number } = {}) => {
+    const qs = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined)) as any).toString();
     return request<Report[]>(`/reports${qs ? `?${qs}` : ""}`);
   },
 
@@ -109,6 +117,8 @@ export const api = {
     const qs = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v))).toString();
     return request<Place[]>(`/places${qs ? `?${qs}` : ""}`);
   },
+
+  listKomin: () => request<KominZòn[]>("/zones/komin"),
 
   adminStats: () => request<AdminStats>("/admin/stats"),
 
@@ -171,4 +181,7 @@ export function clearSession() {
 export function getSessionUser(): CurrentUser | null {
   const raw = localStorage.getItem("ayiti_alet_user");
   return raw ? JSON.parse(raw) : null;
+}
+export function updateSessionUser(user: CurrentUser) {
+  localStorage.setItem("ayiti_alet_user", JSON.stringify(user));
 }

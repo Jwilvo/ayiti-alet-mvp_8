@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
-import { api, Report } from "../api";
+import { api, Report, getSessionUser } from "../api";
 import { categoryMeta, severityColor, timeAgo } from "../categories";
 
 const PÒTOPRENS_CENTER: [number, number] = [18.5392, -72.3364];
@@ -18,16 +18,21 @@ const FILTRES = [
 export default function MapScreen() {
   const [reports, setReports] = useState<Report[] | null>(null);
   const [filtre, setFiltre] = useState("");
+  const [sèlmanZònMwen, setSèlmanZònMwen] = useState(false);
   const [erè, setErè] = useState("");
   const navigate = useNavigate();
+  const user = getSessionUser();
 
   useEffect(() => {
     setReports(null);
     api
-      .listReports(filtre ? { niveauIjans: filtre } : {})
+      .listReports({
+        niveauIjans: filtre || undefined,
+        komin: sèlmanZònMwen ? user?.komin : undefined,
+      })
       .then(setReports)
       .catch((e) => setErè(e.message));
-  }, [filtre]);
+  }, [filtre, sèlmanZònMwen]);
 
   const markers = (reports ?? []).map((r) => ({
     id: r.id,
@@ -50,7 +55,7 @@ export default function MapScreen() {
 
         <IncidentMap center={PÒTOPRENS_CENTER} zoom={12} height={260} markers={markers} />
 
-        <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
           {FILTRES.map((f) => (
             <button
               key={f.key}
@@ -67,6 +72,18 @@ export default function MapScreen() {
             </button>
           ))}
         </div>
+
+        {user?.komin && (
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              style={{ width: "auto", margin: 0 }}
+              checked={sèlmanZònMwen}
+              onChange={(e) => setSèlmanZònMwen(e.target.checked)}
+            />
+            Sèlman zòn mwen ({user.komin})
+          </label>
+        )}
 
         {erè && <div className="banner banner-error">{erè}</div>}
         {!reports && !erè && <p className="empty">Ap chaje ensidan yo…</p>}

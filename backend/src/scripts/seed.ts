@@ -1,5 +1,7 @@
 import "dotenv/config";
 import bcrypt from "bcryptjs";
+import fs from "fs";
+import path from "path";
 import { pool } from "../pg";
 
 const PLACES: [string, string, string | null, string, string, number, number, string][] = [
@@ -16,6 +18,21 @@ const PLACES: [string, string, string | null, string, string, number, number, st
 ];
 
 async function main() {
+  // 1. Referans depatman/komin (li fichye SQL la epi egzekite l dirèkteman)
+  const { rows: existingKomin } = await pool.query("SELECT COUNT(*)::int AS n FROM komin_ayiti");
+  if (existingKomin[0].n === 0) {
+    const seedPath = path.join(__dirname, "..", "..", "db", "komin_seed.sql");
+    if (fs.existsSync(seedPath)) {
+      const sql = fs.readFileSync(seedPath, "utf-8");
+      await pool.query(sql);
+      const { rows } = await pool.query("SELECT COUNT(*)::int AS n FROM komin_ayiti");
+      console.log(`✔ ${rows[0].n} komin ajoute nan lis referans lan`);
+    } else {
+      console.log("⚠ db/komin_seed.sql pa jwenn — komin_ayiti rete vid");
+    }
+  }
+
+  // 2. Kote enpòtan
   const { rows: existingPlaces } = await pool.query("SELECT COUNT(*)::int AS n FROM places");
   if (existingPlaces[0].n === 0) {
     for (const [non, kategori, souKategori, adrès, telefon, lat, lng, komin] of PLACES) {
@@ -28,6 +45,7 @@ async function main() {
     console.log(`✔ ${PLACES.length} kote enpòtan ajoute`);
   }
 
+  // 3. Kont demo
   let demoId: string;
   const { rows: demoRows } = await pool.query("SELECT id FROM users WHERE telefon = $1", ["50937000000"]);
   if (demoRows.length === 0) {
@@ -35,7 +53,7 @@ async function main() {
     const { rows } = await pool.query(
       `INSERT INTO users (nom, telefon, mot_de_pass, komin, katye, wol)
        VALUES ($1, $2, $3, $4, $5, 'sitwayen') RETURNING id`,
-      ["Itilizatè Demo", "50937000000", hash, "Pòtoprens", "Delmas"]
+      ["Itilizatè Demo", "50937000000", hash, "Delmas", "Delmas 33"]
     );
     demoId = rows[0].id;
     console.log("✔ Kont sitwayen demo kreye: 50937000000 / demo1234");
@@ -54,22 +72,30 @@ async function main() {
     console.log("✔ Kont admin demo kreye: 50900000000 / admin1234");
   }
 
+  // 4. Rapò demo (de rapò tou pre pou teste deteksyon doub, plis youn nan yon lòt komin
+  //    pou teste zonaj alèt yo)
   const { rows: existingReports } = await pool.query("SELECT COUNT(*)::int AS n FROM reports");
   if (existingReports[0].n === 0) {
     await pool.query(
-      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès)
+      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès, komin)
        VALUES ($1, false, 'wout_bloke', 'Wout bloke sou Delmas 33',
                'Gen yon pyebwa tonbe ki bloke wout la nan de sans.', 'mwayen',
-               ST_SetSRID(ST_MakePoint(-72.3011, 18.5392), 4326)::geography, 'Delmas 33')`,
+               ST_SetSRID(ST_MakePoint(-72.3011, 18.5392), 4326)::geography, 'Delmas 33', 'Delmas')`,
       [demoId]
     );
     await pool.query(
-      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès)
+      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès, komin)
        VALUES (NULL, true, 'wout_bloke', 'Gen yon pyebwa ki tonbe Delmas 33',
                'Menm pyebwa a, wout la toujou bloke, machin pa ka pase.', 'mwayen',
-               ST_SetSRID(ST_MakePoint(-72.3013, 18.5394), 4326)::geography, 'Delmas 33, toupre kafou a')`
+               ST_SetSRID(ST_MakePoint(-72.3013, 18.5394), 4326)::geography, 'Delmas 33, toupre kafou a', 'Delmas')`
     );
-    console.log("✔ 2 rapò demo ajoute (tou de tou pre — pou teste deteksyon doub)");
+    await pool.query(
+      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès, komin)
+       VALUES (NULL, true, 'inondasyon', 'Inondasyon nan Okap',
+               'Lapli fè lari yo anvayi ak dlo nan katye Katedral la.', 'grav',
+               ST_SetSRID(ST_MakePoint(-72.2043, 19.7573), 4326)::geography, 'Katedral, Okap', 'Okap')`
+    );
+    console.log("✔ 3 rapò demo ajoute (2 tou pre nan Delmas, 1 nan Okap pou teste zonaj)");
   }
 
   console.log("Seed done ✔");

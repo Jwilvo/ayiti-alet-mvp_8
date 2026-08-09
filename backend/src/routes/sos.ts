@@ -15,11 +15,6 @@ const trigerSchema = z.object({
   longitude: z.number(),
 });
 
-// Deklanche yon SOS. Moun nan pa oblije konekte (menm jan ak rapò anonim).
-// Nou jenere yon tokèn sekrè inik pou sesyon SOS sa a — se sèlman moun ki
-// gen tokèn sa a (aparèy ki deklanche l la) ki ka mete pozisyon ajou oswa
-// fèmen li. Lyen "swiv" piblik la ("/sos/:id") pa mande tokèn — sa nòmal,
-// se fèt pou moun ka gade san kont.
 router.post("/trigger", optionalAuth, async (req: AuthedRequest, res, next) => {
   const parsed = trigerSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ erè: "Pozisyon envalid." });
@@ -118,8 +113,6 @@ router.post("/:id/fermen", async (req, res, next) => {
   }
 });
 
-// Li piblik esprè (san otantifikasyon/tokèn) — sa pèmèt lyen "swiv pozisyon
-// an" ke moun nan voye bay fanmi/zanmi/otorite mache san yo pa bezwen kont.
 router.get("/:id", async (req, res, next) => {
   try {
     const { rows } = await pool.query(
@@ -143,8 +136,6 @@ router.get("/:id", async (req, res, next) => {
   }
 });
 
-// Kontak ijans itilizatè konekte a (li/ekri) — itilize pou pwopoze voye
-// alèt SOS bay moun ki pi pwòch li yo.
 router.get("/mwen/kontak-ijans", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const { rows } = await pool.query("SELECT kontak_ijans FROM users WHERE id = $1", [req.userId]);

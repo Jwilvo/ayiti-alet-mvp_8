@@ -1,9 +1,7 @@
 -- Ayiti Alèt — Schema PostgreSQL + PostGIS
--- Sa a se vèsyon final modèl done a dekri nan PRD a (seksyon 3),
--- kounye a aplike reyèlman ak PostGIS pou chan jewografik yo.
 
 CREATE EXTENSION IF NOT EXISTS postgis;
-CREATE EXTENSION IF NOT EXISTS pgcrypto; -- pou gen_random_uuid()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS users (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -33,10 +31,18 @@ CREATE TABLE IF NOT EXISTS reports (
   kreye_nan     timestamptz NOT NULL DEFAULT now()
 );
 
--- Endèks jewospatyal — pèmèt rechèch "ki rapò ki nan X mèt de yon pwen" trè rapid
+-- Si tab "reports" la te deja egziste anvan (soti nan yon ansyen deplwaman),
+-- "CREATE TABLE IF NOT EXISTS" anwo a pa ajoute kolòn nouvo yo — se pou sa
+-- nou toujou ajoute yo eksplisitman apre, pou schema.sql rete "idempotan"
+-- (li ka egzekite plizyè fwa san erè, kit se yon baz done nèf oswa ansyen).
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS komin text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS komin text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS katye text;
+
 CREATE INDEX IF NOT EXISTS reports_lokalizasyon_idx ON reports USING GIST (lokalizasyon);
 CREATE INDEX IF NOT EXISTS reports_kategori_idx ON reports (kategori);
 CREATE INDEX IF NOT EXISTS reports_kreye_nan_idx ON reports (kreye_nan DESC);
+CREATE INDEX IF NOT EXISTS reports_komin_idx ON reports (komin);
 
 CREATE TABLE IF NOT EXISTS report_media (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -75,8 +81,6 @@ CREATE TABLE IF NOT EXISTS places (
 CREATE INDEX IF NOT EXISTS places_lokalizasyon_idx ON places USING GIST (lokalizasyon);
 CREATE INDEX IF NOT EXISTS places_kategori_idx ON places (kategori);
 
--- Bouton SOS: yon "evènman" pou chak deklanchman, ak yon istorik pozisyon
--- pou moun ka swiv (kontak ijans, otorite) pandan ijans lan ap kontinye.
 CREATE TABLE IF NOT EXISTS sos_events (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id          uuid REFERENCES users(id),
@@ -96,3 +100,17 @@ CREATE TABLE IF NOT EXISTS sos_positions (
 );
 
 CREATE INDEX IF NOT EXISTS sos_positions_sos_id_idx ON sos_positions (sos_id);
+
+-- Referans jewografik-administratif Ayiti (Depatman -> Komin). Itilize pou
+-- moun ka chwazi kote yo ye lè yo fè yon rapò, e pou aplikasyon an ka
+-- konpare kote yon ensidan ye ak kote yon itilizatè ye (rejyon pa rejyon),
+-- pou l montre alèt kòm "ijans" nan menm komin nan, e "enfòmasyon" ayè.
+-- Nòt: lis sa a se pi bon efò referans — ajoute/korije komin nan SQL si nesesè.
+CREATE TABLE IF NOT EXISTS komin_ayiti (
+  id       serial PRIMARY KEY,
+  depatman text NOT NULL,
+  komin    text NOT NULL,
+  UNIQUE (depatman, komin)
+);
+
+CREATE INDEX IF NOT EXISTS komin_ayiti_depatman_idx ON komin_ayiti (depatman);

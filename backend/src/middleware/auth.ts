@@ -8,7 +8,6 @@ export interface AuthedRequest extends Request {
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev-sekrè";
 
-// Egzije yon itilizatè konekte. Itilize sou wout ki bezwen otantifikasyon.
 export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header || !header.startsWith("Bearer ")) {
@@ -24,7 +23,6 @@ export function requireAuth(req: AuthedRequest, res: Response, next: NextFunctio
   }
 }
 
-// Egzije yon itilizatè konekte ki gen wòl "admin" (otorite/administratè).
 export async function requireAdmin(req: AuthedRequest, res: Response, next: NextFunction) {
   requireAuth(req, res, async () => {
     try {
@@ -39,7 +37,6 @@ export async function requireAdmin(req: AuthedRequest, res: Response, next: Next
   });
 }
 
-// Otantifikasyon opsyonèl — pèmèt rapò anonim men toujou idantifye itilizatè si l konekte.
 export function optionalAuth(req: AuthedRequest, _res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (header && header.startsWith("Bearer ")) {

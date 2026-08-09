@@ -25,8 +25,6 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Kachte kòd aplikasyon an (JS/CSS/HTML) pou l ka louvri menm san
-        // entènèt; done API yo (rapò, kat) toujou soti sou rezo lè li disponib.
         globPatterns: ["**/*.{js,css,html,png,svg,ico}"],
         runtimeCaching: [
           {

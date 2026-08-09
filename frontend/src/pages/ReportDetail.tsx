@@ -64,6 +64,7 @@ export default function ReportDetail() {
           <h1 style={{ fontSize: 19, marginTop: 12 }}>{report.tit}</h1>
           <div className="report-meta" style={{ marginBottom: 12 }}>
             {meta.label} · {report.adrès || "Kote pa presize"} · {timeAgo(report.kreyeNan)}
+            {report.komin && ` · ${report.komin}`}
             {report.anonim && " · Rapò anonim"}
           </div>
           <p style={{ fontSize: 14.5, lineHeight: 1.5 }}>{report.deskripsyon}</p>

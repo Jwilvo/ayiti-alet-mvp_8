@@ -164,6 +164,7 @@ function Dashboard({ onOut }: { onOut: () => void }) {
                     <strong style={{ fontSize: 14 }}>{r.tit}</strong>
                     <div className="report-meta">
                       {meta.label} · {r.adrès || "Kote pa presize"} · {timeAgo(r.kreyeNan)}
+                      {r.komin && ` · ${r.komin}`}
                     </div>
                   </div>
                 </div>

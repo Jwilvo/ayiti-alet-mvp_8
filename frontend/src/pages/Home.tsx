@@ -4,7 +4,7 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import ConnectivityBanner from "../components/ConnectivityBanner";
-import { api, Report } from "../api";
+import { api, Report, getSessionUser } from "../api";
 import { usePendingQueue, useActiveSos } from "../hooks";
 import { deklancheSos, fèmenSos, lyenSwiv, mesajSmsSos } from "../sos";
 import { categoryMeta, severityColor, timeAgo } from "../categories";
@@ -16,13 +16,15 @@ export default function Home() {
   const [erè, setErè] = useState("");
   const [sosArmed, setSosArmed] = useState(false);
   const [sosChaje, setSosChaje] = useState(false);
+  const [sèlmanZònMwen, setSèlmanZònMwen] = useState(false);
   const navigate = useNavigate();
   const pending = usePendingQueue();
   const activeSos = useActiveSos();
+  const user = getSessionUser();
 
   useEffect(() => {
     api
-      .listReports({ limit: 6 })
+      .listReports({ limit: 20 })
       .then(setReports)
       .catch((e) => setErè(e.message));
   }, []);
@@ -39,7 +41,7 @@ export default function Home() {
   }
 
   async function handleSos() {
-    if (activeSos) return; // deja aktif, aksyon yo nan bandwo a anba
+    if (activeSos) return;
     if (!sosArmed) {
       setSosArmed(true);
       setTimeout(() => setSosArmed(false), 4000);
@@ -57,7 +59,11 @@ export default function Home() {
     }
   }
 
-  const markers = (reports ?? []).map((r) => ({
+  const rapòAfiche = sèlmanZònMwen && user?.komin
+    ? (reports ?? []).filter((r) => r.komin === user.komin)
+    : reports ?? [];
+
+  const markers = rapòAfiche.map((r) => ({
     id: r.id,
     lat: r.latitude,
     lng: r.longitude,
@@ -135,6 +141,18 @@ export default function Home() {
           <Link className="link" to="/rapòte">+ Nouvo rapò</Link>
         </div>
 
+        {user?.komin && (
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, cursor: "pointer" }}>
+            <input
+              type="checkbox"
+              style={{ width: "auto", margin: 0 }}
+              checked={sèlmanZònMwen}
+              onChange={(e) => setSèlmanZònMwen(e.target.checked)}
+            />
+            Sèlman montre rapò nan zòn mwen ({user.komin})
+          </label>
+        )}
+
         {erè && <div className="banner banner-error">{erè}</div>}
 
         {pending.map((p) => {
@@ -156,12 +174,15 @@ export default function Home() {
         })}
 
         {!reports && !erè && <p className="empty">Ap chaje rapò yo…</p>}
-        {reports && reports.length === 0 && pending.length === 0 && (
-          <p className="empty">Poko gen rapò. Se ou ki ka premye a — peze "+ Nouvo rapò".</p>
+        {reports && rapòAfiche.length === 0 && pending.length === 0 && (
+          <p className="empty">
+            {sèlmanZònMwen ? "Pa gen rapò nan zòn ou kounye a." : 'Poko gen rapò. Se ou ki ka premye a — peze "+ Nouvo rapò".'}
+          </p>
         )}
 
-        {reports?.map((r) => {
+        {rapòAfiche.map((r) => {
           const meta = categoryMeta(r.kategori);
+          const menmZòn = !!user?.komin && r.komin === user.komin;
           return (
             <Link key={r.id} to={`/rapò/${r.id}`} style={{ textDecoration: "none", color: "inherit" }}>
               <div className="card report-row">
@@ -174,6 +195,13 @@ export default function Home() {
                   <div className="report-meta">
                     {meta.label} · {r.adrès || "Kote pa presize"} · {timeAgo(r.kreyeNan)}
                   </div>
+                  {user?.komin && r.komin && (
+                    <div style={{ marginTop: 6 }}>
+                      <span className={`tag ${menmZòn ? "tag-zòn" : "tag-lòt-zòn"}`}>
+                        {menmZòn ? `🔔 Ijans pou ou (${r.komin})` : `ℹ️ Enfòmasyon (${r.komin})`}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>

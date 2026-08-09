@@ -33,7 +33,9 @@ jobs:
         working-directory: backend
         run: npm ci
       - name: Aplike schema SQL la
-        run: PGPASSWORD=ayiti_alet_test psql -h localhost -U ayiti_alet -d ayiti_alet -f backend/db/schema.sql
+        run: |
+          PGPASSWORD=ayiti_alet_test psql -h localhost -U ayiti_alet -d ayiti_alet -f backend/db/schema.sql
+          PGPASSWORD=ayiti_alet_test psql -h localhost -U ayiti_alet -d ayiti_alet -f backend/db/komin_seed.sql
       - name: Verifikasyon tip (TypeScript)
         working-directory: backend
         run: npx tsc --noEmit

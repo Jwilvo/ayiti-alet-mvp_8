@@ -15,7 +15,6 @@ export default function ConnectivityBanner() {
     );
   }
 
-  // Online but reports still queued (waiting to sync, or last sync attempt failed)
   return (
     <div className="banner banner-ok" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
       <span>🔄 {queue.length} rapò poko fin voye — n ap eseye kounye a.</span>

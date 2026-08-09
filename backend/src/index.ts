@@ -9,15 +9,15 @@ import placeRoutes from "./routes/places";
 import adminRoutes from "./routes/admin";
 import sosRoutes from "./routes/sos";
 import uploadRoutes, { UPLOAD_DIR } from "./routes/uploads";
+import zoneRoutes from "./routes/zones";
 
 async function main() {
   const app = express();
-  app.set("trust proxy", 1); // dèyè yon reverse proxy nan pwodiksyon (Nginx, load balancer)
-  app.use(helmet({ crossOriginResourcePolicy: false })); // dezaktive pou imaj yo ka chaje soti lòt orijin
+  app.set("trust proxy", 1);
+  app.use(helmet({ crossOriginResourcePolicy: false }));
   app.use(cors());
   app.use(express.json({ limit: "1mb" }));
 
-  // Limit jeneral: 300 rekèt pa IP chak 15 minit — bon kont bombade debaz
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000,
@@ -28,7 +28,6 @@ async function main() {
     })
   );
 
-  // Limit pi sevè sou login/enskripsyon — pwoteje kont tantativ modpas an mas
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 40,
@@ -37,7 +36,6 @@ async function main() {
     message: { erè: "Twòp tantativ koneksyon — tann 15 minit epi eseye ankò." },
   });
 
-  // Limit sou kreyasyon rapò/SOS — anpeche spam san bloke lekti/lis (GET) nòmal
   const kreyasyonLimiterBrit = rateLimit({
     windowMs: 10 * 60 * 1000,
     max: 30,
@@ -63,6 +61,7 @@ async function main() {
   app.use("/sos", sosRoutes);
   app.use("/uploads", uploadRoutes);
   app.use("/uploads", express.static(UPLOAD_DIR));
+  app.use("/zones", zoneRoutes);
 
   app.use((_req, res) => res.status(404).json({ erè: "Wout la pa egziste." }));
 

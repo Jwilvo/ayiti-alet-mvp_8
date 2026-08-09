@@ -4,7 +4,8 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import ConnectivityBanner from "../components/ConnectivityBanner";
-import { api, mediaUrl } from "../api";
+import KominSelect from "../components/KominSelect";
+import { api, getSessionUser } from "../api";
 import { queueReport } from "../offline";
 import { CATEGORIES } from "../categories";
 
@@ -16,11 +17,13 @@ interface FotoPyèsJwenn { url: string; ap_telechaje: boolean; erè?: string; pr
 export default function CreateReport() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const user = getSessionUser();
 
   const [kategori, setKategori] = useState("");
   const [tit, setTit] = useState("");
   const [deskripsyon, setDeskripsyon] = useState("");
   const [adrès, setAdrès] = useState("");
+  const [komin, setKomin] = useState(user?.komin || "");
   const [niveauIjans, setNiveauIjans] = useState<"ba" | "mwayen" | "grav">(
     params.get("ijans") ? "grav" : "mwayen"
   );
@@ -74,7 +77,6 @@ export default function CreateReport() {
         setChajePozisyon(false);
       },
       () => {
-        // Si itilizatè a refize aksè, itilize yon pozisyon apwoksimatif (Pòtoprens santral)
         setLokalizasyon({ lat: 18.5392, lng: -72.3364 });
         setChajePozisyon(false);
       }
@@ -99,6 +101,7 @@ export default function CreateReport() {
       latitude: pos.lat,
       longitude: pos.lng,
       adrès: adrès.trim() || undefined,
+      komin: komin || undefined,
       anonim,
       media: foto.filter((f) => f.url).map((f) => ({ tip: "foto" as const, url: f.url })),
     };
@@ -115,8 +118,6 @@ export default function CreateReport() {
       const res = await api.createReport(kòReport);
       setSiksè({ otoriteAvize: res.otoriteAvize, avètisman: res.avètisman });
     } catch (e: any) {
-      // Rezo a ka echwe menm si navigator.onLine di "wi" (koneksyon fèb/enstab, tipik ann Ayiti).
-      // Nan ka sa a, nou estoke rapò a lokalman pito pase nou pèdi l.
       queueReport(kòReport);
       setChajeAnLokal(true);
       setSiksè({ otoriteAvize: [] });
@@ -157,6 +158,7 @@ export default function CreateReport() {
               </ul>
             </div>
           )}
+
           <button className="btn btn-primary btn-block" onClick={() => navigate("/")}>
             Retounen nan Akèy
           </button>
@@ -216,9 +218,6 @@ export default function CreateReport() {
             placeholder="Bay plis detay sou sa k ap pase a…"
           />
 
-          <label>Adrès oswa pwen repè (opsyonèl)</label>
-          <input value={adrès} onChange={(e) => setAdrès(e.target.value)} placeholder="Egzanp: Delmas 33, toupre famasi a" />
-
           <label>Foto (opsyonèl, maksimòm {MAKS_FOTO})</label>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
             {foto.map((f) => (
@@ -246,11 +245,6 @@ export default function CreateReport() {
                 >
                   ✕
                 </button>
-                {f.erè && (
-                  <div style={{ position: "absolute", top: 80, left: 0, fontSize: 10, color: "var(--urgent)", width: 76 }}>
-                    Echwe
-                  </div>
-                )}
               </div>
             ))}
             {foto.length < MAKS_FOTO && (
@@ -267,6 +261,15 @@ export default function CreateReport() {
               </label>
             )}
           </div>
+
+          <label>Adrès oswa pwen repè (opsyonèl)</label>
+          <input value={adrès} onChange={(e) => setAdrès(e.target.value)} placeholder="Egzanp: Delmas 33, toupre famasi a" />
+
+          <label>Komin</label>
+          <KominSelect value={komin} onChange={setKomin} />
+          <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -6 }}>
+            Sa ede aplikasyon an montre rapò sa a kòm "ijans" sèlman bay moun ki nan menm komin nan.
+          </p>
 
           <label>Kote ensidan an ye</label>
           <button type="button" className="btn btn-ghost btn-block" onClick={pranPozisyon} disabled={chajePozisyon}>
@@ -285,8 +288,6 @@ export default function CreateReport() {
             pickedLocation={lokalizasyon ? { lat: lokalizasyon.lat, lng: lokalizasyon.lng } : null}
             onPickLocation={(lat, lng) => setLokalizasyon({ lat, lng })}
           />
-
-          <div style={{ height: 14 }} />
 
           <label>Nivo ijans</label>
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>

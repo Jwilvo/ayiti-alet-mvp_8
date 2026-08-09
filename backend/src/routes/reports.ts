@@ -8,10 +8,6 @@ import { UPLOAD_DIR } from "./uploads";
 
 const router = Router();
 
-// Chak kategori rapò mape sou otorite ki dwe resevwa l — vèsyon senp de
-// "otomatikman idantifye ki sèvis ki pi apwopriye" ki nan PRD la (seksyon
-// "Koneksyon ak Otorite yo"). Vèsyon pwodiksyon an ap ranplase sa a ak yon
-// modil AI + zòn kouvèti jewografik pou chak otorite.
 const AUTORITE_PA_KATEGORI: Record<string, string[]> = {
   kidnaping: ["PNH"],
   vòl: ["PNH"],
@@ -47,7 +43,7 @@ const REPORT_SELECT = `
          r.niveau_ijans AS "niveauIjans", r.statut,
          ST_Y(r.lokalizasyon::geometry) AS latitude,
          ST_X(r.lokalizasyon::geometry) AS longitude,
-         r.adrès, r.kreye_nan AS "kreyeNan"
+         r.adrès, r.komin, r.kreye_nan AS "kreyeNan"
   FROM reports r
 `;
 
@@ -59,6 +55,7 @@ const createReportSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
   adrès: z.string().optional(),
+  komin: z.string().optional(),
   anonim: z.boolean().optional(),
   media: z
     .array(z.object({ tip: z.enum(["foto", "videyo", "odyo"]), url: z.string() }))
@@ -78,12 +75,12 @@ router.post("/", optionalAuth, async (req: AuthedRequest, res, next) => {
   try {
     await client.query("BEGIN");
     const { rows } = await client.query(
-      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès)
-       VALUES ($1, $2, $3, $4, $5, $6, ST_SetSRID(ST_MakePoint($7, $8), 4326)::geography, $9)
+      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès, komin)
+       VALUES ($1, $2, $3, $4, $5, $6, ST_SetSRID(ST_MakePoint($7, $8), 4326)::geography, $9, $10)
        RETURNING id, user_id AS "userId", anonim, kategori, tit, deskripsyon,
                  niveau_ijans AS "niveauIjans", statut,
                  ST_Y(lokalizasyon::geometry) AS latitude, ST_X(lokalizasyon::geometry) AS longitude,
-                 adrès, kreye_nan AS "kreyeNan"`,
+                 adrès, komin, kreye_nan AS "kreyeNan"`,
       [
         anonim ? null : req.userId ?? null,
         anonim,
@@ -94,6 +91,7 @@ router.post("/", optionalAuth, async (req: AuthedRequest, res, next) => {
         data.longitude,
         data.latitude,
         data.adrès ?? null,
+        data.komin ?? null,
       ]
     );
     const report = rows[0];
@@ -113,7 +111,6 @@ router.post("/", optionalAuth, async (req: AuthedRequest, res, next) => {
             avètisman.push("Youn nan foto yo sanble flou — yon foto pi klè ede otorite yo pi byen konprann sitiyasyon an.");
           }
 
-          // Chèche si menm foto a (oswa yon vèsyon trè sanble) deja itilize nan yon lòt rapò
           const { rows: lòtFoto } = await client.query(
             `SELECT rm.ahash, rm.report_id AS "reportId", r.tit
              FROM report_media rm JOIN reports r ON r.id = rm.report_id
@@ -125,7 +122,7 @@ router.post("/", optionalAuth, async (req: AuthedRequest, res, next) => {
             avètisman.push(`Yon foto sanble ak yon foto ki deja nan rapò "${doub.tit}" — verifye si se pa menm ensidan an rapòte de fwa.`);
           }
         } catch {
-          // Si analiz la echwe (fichye kòwonpi, elatriye), kontinye san blokye kreyasyon rapò a
+          // Si analiz la echwe, kontinye san blokye kreyasyon rapò a
         }
       }
 
@@ -153,7 +150,7 @@ router.post("/", optionalAuth, async (req: AuthedRequest, res, next) => {
 });
 
 router.get("/", async (req, res, next) => {
-  const { kategori, niveauIjans, limit } = req.query;
+  const { kategori, niveauIjans, komin, limit } = req.query;
   const conditions: string[] = [];
   const params: any[] = [];
 
@@ -164,6 +161,10 @@ router.get("/", async (req, res, next) => {
   if (typeof niveauIjans === "string") {
     params.push(niveauIjans);
     conditions.push(`r.niveau_ijans = $${params.length}`);
+  }
+  if (typeof komin === "string") {
+    params.push(komin);
+    conditions.push(`r.komin = $${params.length}`);
   }
 
   const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";

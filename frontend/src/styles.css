@@ -121,6 +121,8 @@ label { font-size: 13px; color: var(--text-muted); display: block; margin-bottom
 .tag-grav { background: var(--urgent-dim); color: var(--urgent); }
 .tag-mwayen { background: var(--amber-dim); color: var(--amber); }
 .tag-ba { background: var(--calm-dim); color: var(--calm); }
+.tag-zòn { background: var(--calm-dim); color: var(--calm); }
+.tag-lòt-zòn { background: var(--surface-raised); color: var(--text-muted); }
 
 .navbar {
   position: sticky;

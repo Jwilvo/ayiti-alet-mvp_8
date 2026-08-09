@@ -47,8 +47,6 @@ function kòmanseSwiv(sosId: string, tokèn: string) {
     { enableHighAccuracy: true }
   );
 
-  // Voye yon mizajou chak 15 segond pito pase chak fwa GPS la deklanche
-  // (evite bombade sèvè a e ekonomize done selilè).
   intervalId = window.setInterval(() => {
     if (dènyePozisyon) {
       api.sosUpdatePosition(sosId, tokèn, dènyePozisyon.lat, dènyePozisyon.lng).catch(() => {});
@@ -86,7 +84,6 @@ export async function fèmenSos() {
   }
 }
 
-// Si moun nan rechaje paj la pandan SOS aktif, remete swiv pozisyon an ann mach.
 export function reprannSosSiAktif() {
   const sos = getActiveSos();
   if (sos) kòmanseSwiv(sos.id, sos.tokèn);

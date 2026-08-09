@@ -26,7 +26,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 8 * 1024 * 1024 }, // 8 MB maks — rezo mobil ann Ayiti souvan fèb
+  limits: { fileSize: 8 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (!TIP_AKSEPTE[file.mimetype]) {
       return cb(new Error("Sèl imaj (JPEG, PNG, WEBP, GIF) aksepte kounye a."));
@@ -45,7 +45,6 @@ router.post("/", upload.single("fichye"), (req, res) => {
   });
 });
 
-// Mesaj erè klè lè fichye a twò gwo oswa move tip (multer voye yon erè anvan handler anwo a)
 router.use((err: any, _req: any, res: any, _next: any) => {
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
