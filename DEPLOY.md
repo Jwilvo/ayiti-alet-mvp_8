@@ -6,6 +6,8 @@
 1. Kreye kont sou supabase.com, kreye yon pwojè
 2. SQL Editor → kole kontni `backend/db/schema.sql` → Run
 3. SQL Editor → kole kontni `backend/db/komin_seed.sql` → Run
+4. SQL Editor → kole kontni `backend/db/depatman_zòn_seed.sql` → Run (limit jewografik
+   depatman yo, pou oto-sijesyon GPS)
 4. "Connect" → "Session pooler" → kopye chemen an (itilize sa a, pa "Direct connection",
    pou konpatibilite ak rezo IPv4 Render)
 

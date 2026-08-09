@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
-import KominSelect from "../components/KominSelect";
-import { api, clearSession, getSessionUser, saveSession, updateSessionUser, KontakIjans } from "../api";
+import { api, clearSession, getSessionUser, saveSession, KontakIjans } from "../api";
 
 function KontakIjansEditor() {
   const [kontak, setKontak] = useState<KontakIjans[]>([]);
@@ -67,48 +66,12 @@ function KontakIjansEditor() {
   );
 }
 
-function ZònEditor({ komin, onSove }: { komin: string; onSove: (k: string) => void }) {
-  const [val, setVal] = useState(komin);
-  const [chaje, setChaje] = useState(false);
-  const [mesaj, setMesaj] = useState("");
-
-  async function sove() {
-    setChaje(true);
-    setMesaj("");
-    try {
-      const user = await api.updateMe({ komin: val });
-      updateSessionUser(user);
-      onSove(val);
-      setMesaj("Komin ou mete ajou ✔");
-    } catch (e: any) {
-      setMesaj(e.message);
-    } finally {
-      setChaje(false);
-    }
-  }
-
-  return (
-    <>
-      <div className="section-title"><h2>Zòn mwen</h2></div>
-      <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: -6 }}>
-        Chwazi komin ou pou aplikasyon an ka montre w rapò nan zòn ou kòm "ijans", e rapò lòt zòn kòm "enfòmasyon" sèlman.
-      </p>
-      <KominSelect value={val} onChange={setVal} />
-      {mesaj && <div className="banner banner-ok" style={{ marginTop: 8 }}>{mesaj}</div>}
-      <button className="btn btn-primary btn-block" onClick={sove} disabled={chaje || !val}>
-        {chaje ? <span className="spinner" /> : "Sove komin mwen"}
-      </button>
-    </>
-  );
-}
-
 export default function Profile() {
   const [user, setUser] = useState(getSessionUser());
   const [mòd, setMòd] = useState<"login" | "register">("login");
   const [nom, setNom] = useState("");
   const [telefon, setTelefon] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
-  const [komin, setKomin] = useState("");
   const [loading, setLoading] = useState(false);
   const [erè, setErè] = useState("");
 
@@ -120,7 +83,7 @@ export default function Profile() {
       const res =
         mòd === "login"
           ? await api.login({ telefon, motDePasse })
-          : await api.register({ nom, telefon, motDePasse, komin: komin || undefined });
+          : await api.register({ nom, telefon, motDePasse });
       saveSession(res.token, res.user);
       setUser(res.user);
     } catch (e: any) {
@@ -152,13 +115,13 @@ export default function Profile() {
             </div>
             <h2 style={{ fontSize: 18 }}>{user.nom}</h2>
             <p style={{ color: "var(--text-muted)", fontSize: 13.5, margin: "4px 0 0" }}>
-              {user.telefon}{user.komin ? ` · ${user.komin}` : ""}
+              {user.telefon}
+            </p>
+            <p style={{ color: "var(--text-muted)", fontSize: 12, margin: "8px 0 0" }}>
+              Aplikasyon an itilize pozisyon telefòn ou otomatikman pou montre alèt ki toupre w —
+              ou pa bezwen chwazi okenn zòn manyèlman.
             </p>
           </div>
-
-          <ZònEditor komin={user.komin || ""} onSove={(k) => setUser({ ...user, komin: k })} />
-
-          <div style={{ height: 20 }} />
 
           <KontakIjansEditor />
 
@@ -177,8 +140,8 @@ export default function Profile() {
       <div className="screen">
         <h1 style={{ fontSize: 20 }}>{mòd === "login" ? "Konekte" : "Kreye yon kont"}</h1>
         <p style={{ color: "var(--text-muted)", fontSize: 13.5, marginTop: 0 }}>
-          Ou pa oblije gen yon kont pou fè yon rapò anonim, men yon kont pèmèt ou konfime rapò, mete kontak
-          ijans pou SOS, ak wè alèt nan zòn ou.
+          Ou pa oblije gen yon kont pou fè yon rapò anonim, men yon kont pèmèt ou konfime rapò ak
+          mete kontak ijans pou SOS.
         </p>
 
         <form onSubmit={soumèt}>
@@ -186,8 +149,6 @@ export default function Profile() {
             <>
               <label>Non konplè</label>
               <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Non ou" />
-              <label>Komin</label>
-              <KominSelect value={komin} onChange={setKomin} />
             </>
           )}
           <label>Nimewo telefòn</label>

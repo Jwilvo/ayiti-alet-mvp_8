@@ -4,10 +4,10 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import ConnectivityBanner from "../components/ConnectivityBanner";
-import { api, Report, getSessionUser } from "../api";
-import { usePendingQueue, useActiveSos } from "../hooks";
+import { api, Report } from "../api";
+import { usePendingQueue, useActiveSos, useUserPosition } from "../hooks";
 import { deklancheSos, fèmenSos, lyenSwiv, mesajSmsSos } from "../sos";
-import { categoryMeta, severityColor, timeAgo } from "../categories";
+import { categoryMeta, severityColor, timeAgo, distansKm, nivoPètinans } from "../categories";
 
 const PÒTOPRENS_CENTER: [number, number] = [18.5392, -72.3364];
 
@@ -16,15 +16,14 @@ export default function Home() {
   const [erè, setErè] = useState("");
   const [sosArmed, setSosArmed] = useState(false);
   const [sosChaje, setSosChaje] = useState(false);
-  const [sèlmanZònMwen, setSèlmanZònMwen] = useState(false);
   const navigate = useNavigate();
   const pending = usePendingQueue();
   const activeSos = useActiveSos();
-  const user = getSessionUser();
+  const pozisyon = useUserPosition(); // otomatik, san bouton — gade hooks.ts
 
   useEffect(() => {
     api
-      .listReports({ limit: 20 })
+      .listReports({ limit: 30 })
       .then(setReports)
       .catch((e) => setErè(e.message));
   }, []);
@@ -59,11 +58,16 @@ export default function Home() {
     }
   }
 
-  const rapòAfiche = sèlmanZònMwen && user?.komin
-    ? (reports ?? []).filter((r) => r.komin === user.komin)
-    : reports ?? [];
+  // Chak rapò otomatikman klase "ijans" (toupre w), "enfòmasyon" (menm rejyon
+  // an, pi lwen), oswa "lwen" (n al kache l) — tout sa kalkile ak distans
+  // GPS reyèl, san okenn non komin/depatman, san okenn bouton.
+  const rapòAkNivo = (reports ?? []).map((r) => {
+    const dist = pozisyon ? distansKm(pozisyon.lat, pozisyon.lng, r.latitude, r.longitude) : null;
+    return { rapò: r, dist, nivo: nivoPètinans(dist) };
+  });
+  const rapòAfiche = rapòAkNivo.filter((r) => r.nivo !== "lwen");
 
-  const markers = rapòAfiche.map((r) => ({
+  const markers = rapòAfiche.map(({ rapò: r }) => ({
     id: r.id,
     lat: r.latitude,
     lng: r.longitude,
@@ -134,23 +138,17 @@ export default function Home() {
           <h2>Kat aktivite</h2>
           <Link className="link" to="/kat">Wè tout →</Link>
         </div>
-        <IncidentMap center={PÒTOPRENS_CENTER} zoom={12} markers={markers} />
+        <IncidentMap center={pozisyon ? [pozisyon.lat, pozisyon.lng] : PÒTOPRENS_CENTER} zoom={11} markers={markers} />
 
         <div className="section-title">
           <h2>Rapò resan</h2>
           <Link className="link" to="/rapòte">+ Nouvo rapò</Link>
         </div>
 
-        {user?.komin && (
-          <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, cursor: "pointer" }}>
-            <input
-              type="checkbox"
-              style={{ width: "auto", margin: 0 }}
-              checked={sèlmanZònMwen}
-              onChange={(e) => setSèlmanZònMwen(e.target.checked)}
-            />
-            Sèlman montre rapò nan zòn mwen ({user.komin})
-          </label>
+        {!pozisyon && (
+          <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -8, marginBottom: 12 }}>
+            Aktive lokalizasyon pou wè otomatikman ki alèt ki toupre w.
+          </p>
         )}
 
         {erè && <div className="banner banner-error">{erè}</div>}
@@ -175,14 +173,11 @@ export default function Home() {
 
         {!reports && !erè && <p className="empty">Ap chaje rapò yo…</p>}
         {reports && rapòAfiche.length === 0 && pending.length === 0 && (
-          <p className="empty">
-            {sèlmanZònMwen ? "Pa gen rapò nan zòn ou kounye a." : 'Poko gen rapò. Se ou ki ka premye a — peze "+ Nouvo rapò".'}
-          </p>
+          <p className="empty">Poko gen rapò toupre w. Se ou ki ka premye a — peze "+ Nouvo rapò".</p>
         )}
 
-        {rapòAfiche.map((r) => {
+        {rapòAfiche.map(({ rapò: r, nivo }) => {
           const meta = categoryMeta(r.kategori);
-          const menmZòn = !!user?.komin && r.komin === user.komin;
           return (
             <Link key={r.id} to={`/rapò/${r.id}`} style={{ textDecoration: "none", color: "inherit" }}>
               <div className="card report-row">
@@ -195,10 +190,10 @@ export default function Home() {
                   <div className="report-meta">
                     {meta.label} · {r.adrès || "Kote pa presize"} · {timeAgo(r.kreyeNan)}
                   </div>
-                  {user?.komin && r.komin && (
+                  {pozisyon && (
                     <div style={{ marginTop: 6 }}>
-                      <span className={`tag ${menmZòn ? "tag-zòn" : "tag-lòt-zòn"}`}>
-                        {menmZòn ? `🔔 Ijans pou ou (${r.komin})` : `ℹ️ Enfòmasyon (${r.komin})`}
+                      <span className={`tag ${nivo === "ijans" ? "tag-zòn" : "tag-lòt-zòn"}`}>
+                        {nivo === "ijans" ? "🔔 Ijans pou ou" : "ℹ️ Enfòmasyon"}
                       </span>
                     </div>
                   )}

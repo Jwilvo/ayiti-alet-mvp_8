@@ -4,8 +4,7 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import ConnectivityBanner from "../components/ConnectivityBanner";
-import KominSelect from "../components/KominSelect";
-import { api, getSessionUser } from "../api";
+import { api } from "../api";
 import { queueReport } from "../offline";
 import { CATEGORIES } from "../categories";
 
@@ -17,13 +16,11 @@ interface FotoPyèsJwenn { url: string; ap_telechaje: boolean; erè?: string; pr
 export default function CreateReport() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const user = getSessionUser();
 
   const [kategori, setKategori] = useState("");
   const [tit, setTit] = useState("");
   const [deskripsyon, setDeskripsyon] = useState("");
   const [adrès, setAdrès] = useState("");
-  const [komin, setKomin] = useState(user?.komin || "");
   const [niveauIjans, setNiveauIjans] = useState<"ba" | "mwayen" | "grav">(
     params.get("ijans") ? "grav" : "mwayen"
   );
@@ -101,7 +98,6 @@ export default function CreateReport() {
       latitude: pos.lat,
       longitude: pos.lng,
       adrès: adrès.trim() || undefined,
-      komin: komin || undefined,
       anonim,
       media: foto.filter((f) => f.url).map((f) => ({ tip: "foto" as const, url: f.url })),
     };
@@ -264,12 +260,6 @@ export default function CreateReport() {
 
           <label>Adrès oswa pwen repè (opsyonèl)</label>
           <input value={adrès} onChange={(e) => setAdrès(e.target.value)} placeholder="Egzanp: Delmas 33, toupre famasi a" />
-
-          <label>Komin</label>
-          <KominSelect value={komin} onChange={setKomin} />
-          <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -6 }}>
-            Sa ede aplikasyon an montre rapò sa a kòm "ijans" sèlman bay moun ki nan menm komin nan.
-          </p>
 
           <label>Kote ensidan an ye</label>
           <button type="button" className="btn btn-ghost btn-block" onClick={pranPozisyon} disabled={chajePozisyon}>

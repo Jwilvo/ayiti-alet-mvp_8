@@ -41,3 +41,30 @@ export function timeAgo(iso: string) {
   const day = Math.floor(hr / 24);
   return `${day}j pase`;
 }
+
+// Distans ant 2 pwen GPS an kilomèt (fòmil Haversine) — itilize pou detèmine
+// otomatikman si yon rapò "toupre" itilizatè a (san nou pa bezwen konnen non
+// komin/depatman ni mande yo chwazi anyen manyèlman).
+export function distansKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Sèy yo (an km) ki apwoksime gwosè yon komin vs yon depatman, san nou pa
+// bezwen okenn kat non zòn — jis distans reyèl ant 2 pwen.
+export const RAYON_IJANS_KM = 15;
+export const RAYON_ENFÒMASYON_KM = 80;
+
+export type NivoPètinans = "ijans" | "enfòmasyon" | "lwen";
+
+export function nivoPètinans(distKm: number | null): NivoPètinans {
+  if (distKm === null) return "enfòmasyon";
+  if (distKm <= RAYON_IJANS_KM) return "ijans";
+  if (distKm <= RAYON_ENFÒMASYON_KM) return "enfòmasyon";
+  return "lwen";
+}

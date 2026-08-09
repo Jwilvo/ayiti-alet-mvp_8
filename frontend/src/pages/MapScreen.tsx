@@ -3,8 +3,9 @@ import { Link, useNavigate } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
-import { api, Report, getSessionUser } from "../api";
-import { categoryMeta, severityColor, timeAgo } from "../categories";
+import { api, Report } from "../api";
+import { useUserPosition } from "../hooks";
+import { categoryMeta, severityColor, timeAgo, distansKm, nivoPètinans } from "../categories";
 
 const PÒTOPRENS_CENTER: [number, number] = [18.5392, -72.3364];
 
@@ -18,23 +19,24 @@ const FILTRES = [
 export default function MapScreen() {
   const [reports, setReports] = useState<Report[] | null>(null);
   const [filtre, setFiltre] = useState("");
-  const [sèlmanZònMwen, setSèlmanZònMwen] = useState(false);
   const [erè, setErè] = useState("");
   const navigate = useNavigate();
-  const user = getSessionUser();
+  const pozisyon = useUserPosition(); // otomatik, san bouton
 
   useEffect(() => {
     setReports(null);
     api
-      .listReports({
-        niveauIjans: filtre || undefined,
-        komin: sèlmanZònMwen ? user?.komin : undefined,
-      })
+      .listReports({ niveauIjans: filtre || undefined })
       .then(setReports)
       .catch((e) => setErè(e.message));
-  }, [filtre, sèlmanZònMwen]);
+  }, [filtre]);
 
-  const markers = (reports ?? []).map((r) => ({
+  const rapòAkNivo = (reports ?? []).map((r) => {
+    const dist = pozisyon ? distansKm(pozisyon.lat, pozisyon.lng, r.latitude, r.longitude) : null;
+    return { rapò: r, dist, nivo: nivoPètinans(dist) };
+  });
+
+  const markers = rapòAkNivo.map(({ rapò: r }) => ({
     id: r.id,
     lat: r.latitude,
     lng: r.longitude,
@@ -53,9 +55,14 @@ export default function MapScreen() {
           Peze yon pwen sou kat la pou wè detay rapò a.
         </p>
 
-        <IncidentMap center={PÒTOPRENS_CENTER} zoom={12} height={260} markers={markers} />
+        <IncidentMap
+          center={pozisyon ? [pozisyon.lat, pozisyon.lng] : PÒTOPRENS_CENTER}
+          zoom={11}
+          height={260}
+          markers={markers}
+        />
 
-        <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
           {FILTRES.map((f) => (
             <button
               key={f.key}
@@ -73,23 +80,11 @@ export default function MapScreen() {
           ))}
         </div>
 
-        {user?.komin && (
-          <label style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14, cursor: "pointer" }}>
-            <input
-              type="checkbox"
-              style={{ width: "auto", margin: 0 }}
-              checked={sèlmanZònMwen}
-              onChange={(e) => setSèlmanZònMwen(e.target.checked)}
-            />
-            Sèlman zòn mwen ({user.komin})
-          </label>
-        )}
-
         {erè && <div className="banner banner-error">{erè}</div>}
         {!reports && !erè && <p className="empty">Ap chaje ensidan yo…</p>}
         {reports && reports.length === 0 && <p className="empty">Pa gen ensidan pou filtè sa a kounye a.</p>}
 
-        {reports?.map((r) => {
+        {rapòAkNivo.map(({ rapò: r, nivo }) => {
           const meta = categoryMeta(r.kategori);
           return (
             <Link key={r.id} to={`/rapò/${r.id}`} style={{ textDecoration: "none", color: "inherit" }}>
@@ -103,6 +98,13 @@ export default function MapScreen() {
                   <div className="report-meta">
                     {meta.label} · {r.adrès || "Kote pa presize"} · {timeAgo(r.kreyeNan)}
                   </div>
+                  {pozisyon && (
+                    <div style={{ marginTop: 6 }}>
+                      <span className={`tag ${nivo === "ijans" ? "tag-zòn" : "tag-lòt-zòn"}`}>
+                        {nivo === "ijans" ? "🔔 Ijans pou ou" : nivo === "enfòmasyon" ? "ℹ️ Enfòmasyon" : "Lwen"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </Link>

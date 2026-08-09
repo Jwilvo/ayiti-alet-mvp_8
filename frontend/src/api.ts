@@ -120,6 +120,9 @@ export const api = {
 
   listKomin: () => request<KominZòn[]>("/zones/komin"),
 
+  detèDepatmanOtomatik: (lat: number, lng: number) =>
+    request<{ depatman: string | null; presizyon?: string }>(`/zones/depatman-otomatik?lat=${lat}&lng=${lng}`),
+
   adminStats: () => request<AdminStats>("/admin/stats"),
 
   adminListReports: (params: { statut?: string; niveauIjans?: string } = {}) => {

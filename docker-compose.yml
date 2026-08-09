@@ -12,6 +12,7 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
       - ./backend/db/komin_seed.sql:/docker-entrypoint-initdb.d/02_komin_seed.sql:ro
+      - ./backend/db/depatman_zòn_seed.sql:/docker-entrypoint-initdb.d/03_depatman_zòn_seed.sql:ro
     ports:
       - "5432:5432"
     healthcheck:

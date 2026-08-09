@@ -114,3 +114,15 @@ CREATE TABLE IF NOT EXISTS komin_ayiti (
 );
 
 CREATE INDEX IF NOT EXISTS komin_ayiti_depatman_idx ON komin_ayiti (depatman);
+
+-- Limit jewografik 10 depatman yo (Natural Earth, domèn piblik) — itilize pou
+-- detekte otomatikman ki depatman yon pozisyon GPS ye ladan, pou n ka redwi
+-- lis komin yo pito nou fè moun chwazi nan 140 total. Nivo komin/seksyon
+-- kominal poko gen done polygon egzat disponib.
+CREATE TABLE IF NOT EXISTS depatman_zòn (
+  id   serial PRIMARY KEY,
+  non  text NOT NULL UNIQUE,  -- non Kreyòl, dwe matche kolòn "depatman" nan komin_ayiti
+  zòn  geography(MultiPolygon, 4326) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS depatman_zòn_zòn_idx ON depatman_zòn USING GIST (zòn);

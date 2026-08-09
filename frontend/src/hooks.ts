@@ -28,3 +28,38 @@ export function useActiveSos(): ActiveSos | null {
   useEffect(() => subscribeSos(setSos), []);
   return sos;
 }
+
+// Pozisyon itilizatè a, jwenn otomatikman an background (yon sèl demann
+// pèmisyon pou tout sesyon an — pa gen bouton, pa gen aksyon moun nan bezwen
+// fè). Itilize pou detèmine ki rapò "toupre" li san nou pa bezwen mande l
+// chwazi okenn non komin/depatman.
+let pozisyonKache: { lat: number; lng: number } | null = null;
+let demannAnKou: Promise<void> | null = null;
+
+export function useUserPosition(): { lat: number; lng: number } | null {
+  const [pozisyon, setPozisyon] = useState<{ lat: number; lng: number } | null>(pozisyonKache);
+
+  useEffect(() => {
+    if (pozisyonKache) {
+      setPozisyon(pozisyonKache);
+      return;
+    }
+    if (!navigator.geolocation) return;
+
+    if (!demannAnKou) {
+      demannAnKou = new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            pozisyonKache = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            resolve();
+          },
+          () => resolve(),
+          { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+        );
+      });
+    }
+    demannAnKou.then(() => setPozisyon(pozisyonKache));
+  }, []);
+
+  return pozisyon;
+}

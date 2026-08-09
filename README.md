@@ -60,11 +60,16 @@ npm run dev          # http://localhost:5173
 - ✅ Panèl Administrasyon ak deteksyon rapò repete an tan reyèl ak PostGIS (`ST_DWithin`)
 - ✅ Bouton SOS ak pataj pozisyon an tan reyèl, tokèn sesyon sekirize
 - ✅ Telechajman foto + modil analiz imaj (AI heuristik: koulè, flou, deteksyon doub)
-- ✅ **Zonaj alèt pa Depatman/Komin**: itilizatè chwazi komin yo (nan enskripsyon oswa
-  Pwofil), rapò yo make ak yon komin lè yo kreye. Sou Akèy ak Kat la, rapò ki nan **menm
-  komin ak itilizatè a** parèt kòm "🔔 Ijans pou ou", pandan rapò lòt komin parèt kòm
-  "ℹ️ Enfòmasyon" sèlman — sa evite moun resevwa alèt ijans pou zòn ki pa konsène yo.
-  Lis 139 komin/10 depatman yo nan `backend/db/komin_seed.sql`.
+- ✅ **Alèt otomatik pa distans (san bouton, san seleksyon manyèl)**: aplikasyon an jwenn
+  pozisyon telefòn ou an background (yon sèl pèmisyon pou tout sesyon an), epi klase chak
+  rapò otomatikman: **🔔 Ijans pou ou** si li mwens pase 15km de ou (anviwon gwosè yon
+  komin), **ℹ️ Enfòmasyon** si li ant 15-80km (anviwon gwosè yon depatman), oswa kache
+  nèt si li pi lwen. Pa gen okenn non komin/depatman moun bezwen chwazi — tout kalkile ak
+  distans GPS reyèl (`frontend/src/categories.ts` — `distansKm`, `nivoPètinans`).
+- ✅ **Oto-deteksyon depatman pa GPS** (backend, `/zones/depatman-otomatik`): itilize PostGIS
+  `ST_Contains` ak yon tolerans 5km pou konfime ki depatman yon pozisyon ye ladan — sa sèvi
+  kòm baz pou fonksyon zòn ki pi presi nan lavni. Limit jewografik yo nan
+  `backend/db/depatman_zòn_seed.sql` (Natural Earth, domèn piblik).
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 
