@@ -4,14 +4,16 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import { useRapòPaNivo } from "../alertFeed";
 import { dejaLi, markeLi } from "../unread";
-import { useVèsyonMakè } from "../hooks";
+import { useVèsyonMakè, useLangVèsyon } from "../hooks";
 import { categoryMeta, timeAgo } from "../categories";
+import { t } from "../i18n";
 
 export default function Nouvel() {
   const { lis, chaje } = useRapòPaNivo("enfòmasyon");
   const [lòd, setLòd] = useState<"nouvo" | "ansyen">("nouvo");
   const navigate = useNavigate();
   useVèsyonMakè();
+  useLangVèsyon();
 
   const lisKlase = [...lis].sort((a, b) => {
     const tA = new Date(a.rapò.kreyeNan).getTime();
@@ -41,7 +43,7 @@ export default function Nouvel() {
       <TopBar />
       <div className="screen">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <h1 style={{ fontSize: 20, margin: 0 }}>ℹ️ Nouvèl (rejyon w)</h1>
+          <h1 style={{ fontSize: 20, margin: 0 }}>{t("nouvèl.tit")}</h1>
           {konteAPokoLi > 0 && (
             <span className="tag" style={{ background: "var(--surface-raised)", color: "var(--text-muted)" }}>
               {konteAPokoLi} nouvo
@@ -62,7 +64,7 @@ export default function Nouvel() {
             }}
             onClick={() => setLòd("nouvo")}
           >
-            ↓ Pi nouvo an premye
+            {t("alèt.triyaj.nouvo")}
           </button>
           <button
             className="btn btn-ghost"
@@ -73,11 +75,11 @@ export default function Nouvel() {
             }}
             onClick={() => setLòd("ansyen")}
           >
-            ↑ Pi ansyen an premye
+            {t("alèt.triyaj.ansyen")}
           </button>
         </div>
 
-        {lis.length === 0 && <p className="empty">Pa gen nouvèl nan rejyon w kounye a.</p>}
+        {lis.length === 0 && <p className="empty">{t("nouvèl.vid")}</p>}
 
         {lisKlase.map(({ rapò, distKm }) => {
           const meta = categoryMeta(rapò.kategori);
@@ -106,7 +108,7 @@ export default function Nouvel() {
                 <div className="report-meta">
                   {meta.label} · {timeAgo(rapò.kreyeNan)}
                   {distKm !== null && ` · ${distKm.toFixed(0)} km`}
-                  {li && " · li deja"}
+                  {li && ` · ${t("alèt.li_deja")}`}
                 </div>
               </div>
             </div>

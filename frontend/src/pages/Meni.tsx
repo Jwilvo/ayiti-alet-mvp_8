@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import { getSessionUser } from "../api";
+import { t } from "../i18n";
+import { useLangVèsyon } from "../hooks";
 
 const ATIKÒL = [
   { to: "/meni/pwofil-sekirite", label: "Pwofil sekirite", icon: "🛡️" },
@@ -14,6 +16,7 @@ const ATIKÒL = [
 ];
 
 export default function Meni() {
+  useLangVèsyon();
   const user = getSessionUser();
 
   return (
@@ -31,7 +34,7 @@ export default function Meni() {
             {user ? user.nom.slice(0, 1).toUpperCase() : "👤"}
           </div>
           <div>
-            <strong style={{ fontSize: 14.5 }}>{user ? user.nom : "Ou pa konekte"}</strong>
+            <strong style={{ fontSize: 14.5 }}>{user ? user.nom : t("meni.pa_konekte")}</strong>
             <div style={{ fontSize: 12.5, color: "var(--text-muted)" }}>
               {user ? user.telefon : "Konekte pou plis fonksyon"}
             </div>

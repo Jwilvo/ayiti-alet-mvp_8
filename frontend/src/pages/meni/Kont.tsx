@@ -64,10 +64,76 @@ function KontakIjansEditor() {
   );
 }
 
+function BliyeModPas({ onFini }: { onFini: () => void }) {
+  const [etap, setEtap] = useState<"mande" | "konfime">("mande");
+  const [telefon, setTelefon] = useState("");
+  const [kòd, setKòd] = useState("");
+  const [nouvoModDePasse, setNouvoModDePasse] = useState("");
+  const [chaje, setChaje] = useState(false);
+  const [mesaj, setMesaj] = useState("");
+  const [erè, setErè] = useState("");
+
+  async function mande(e: React.FormEvent) {
+    e.preventDefault();
+    setChaje(true);
+    setErè("");
+    try {
+      const res = await api.mandeReyajisman(telefon);
+      setMesaj(res.mesaj);
+      setEtap("konfime");
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setChaje(false);
+    }
+  }
+
+  async function konfime(e: React.FormEvent) {
+    e.preventDefault();
+    setChaje(true);
+    setErè("");
+    try {
+      await api.konfimeReyajisman(telefon, kòd, nouvoModDePasse);
+      onFini();
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setChaje(false);
+    }
+  }
+
+  if (etap === "mande") {
+    return (
+      <form onSubmit={mande}>
+        <label>Nimewo telefòn kont ou a</label>
+        <input value={telefon} onChange={(e) => setTelefon(e.target.value)} placeholder="50937000000" />
+        {erè && <div className="banner banner-error">{erè}</div>}
+        <button className="btn btn-primary btn-block" type="submit" disabled={chaje}>
+          {chaje ? <span className="spinner" /> : "Voye kòd reyajisman"}
+        </button>
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={konfime}>
+      <div className="banner banner-ok">{mesaj}</div>
+      <label>Kòd 6 chif ou resevwa a</label>
+      <input value={kòd} onChange={(e) => setKòd(e.target.value)} placeholder="123456" maxLength={6} />
+      <label>Nouvo modpas</label>
+      <input type="password" value={nouvoModDePasse} onChange={(e) => setNouvoModDePasse(e.target.value)} placeholder="Omwen 6 karaktè" />
+      {erè && <div className="banner banner-error">{erè}</div>}
+      <button className="btn btn-primary btn-block" type="submit" disabled={chaje}>
+        {chaje ? <span className="spinner" /> : "Chanje modpas la"}
+      </button>
+    </form>
+  );
+}
+
 export default function Kont() {
   const navigate = useNavigate();
   const [user, setUser] = useState(getSessionUser());
-  const [mòd, setMòd] = useState<"login" | "register">("login");
+  const [mòd, setMòd] = useState<"login" | "register" | "bliye">("login");
   const [nom, setNom] = useState("");
   const [telefon, setTelefon] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
@@ -117,6 +183,17 @@ export default function Kont() {
             </div>
             <KontakIjansEditor />
           </>
+        ) : mòd === "bliye" ? (
+          <>
+            <h1 style={{ fontSize: 20 }}>Reyajiste modpas</h1>
+            <p style={{ color: "var(--text-muted)", fontSize: 13.5, marginTop: 0 }}>
+              Nou pral voye yon kòd 6 chif nan nimewo telefòn ou a pa SMS.
+            </p>
+            <BliyeModPas onFini={() => setMòd("login")} />
+            <button className="btn btn-ghost btn-block" style={{ marginTop: 10 }} onClick={() => setMòd("login")}>
+              ← Retounen nan koneksyon
+            </button>
+          </>
         ) : (
           <>
             <h1 style={{ fontSize: 20 }}>{mòd === "login" ? "Konekte" : "Kreye yon kont"}</h1>
@@ -143,6 +220,12 @@ export default function Kont() {
                 {loading ? <span className="spinner" /> : mòd === "login" ? "Konekte" : "Kreye kont lan"}
               </button>
             </form>
+
+            {mòd === "login" && (
+              <button className="btn btn-ghost btn-block" style={{ marginTop: 10 }} onClick={() => setMòd("bliye")}>
+                Bliye modpas ou?
+              </button>
+            )}
 
             <button
               className="btn btn-ghost btn-block"

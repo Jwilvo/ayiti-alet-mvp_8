@@ -4,13 +4,15 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import { api, Report } from "../api";
-import { useActiveSos, useUserPosition } from "../hooks";
+import { useActiveSos, useUserPosition, useLangVèsyon } from "../hooks";
 import { deklancheSos, fèmenSos, lyenSwiv, mesajSmsTouKontak, mesajWhatsAppSos } from "../sos";
 import { categoryMeta, severityColor, distansKm, nivoPètinans } from "../categories";
+import { t } from "../i18n";
 
 const PÒTOPRENS_CENTER: [number, number] = [18.5392, -72.3364];
 
 export default function Home() {
+  useLangVèsyon();
   const [reports, setReports] = useState<Report[] | null>(null);
   const [sosArmed, setSosArmed] = useState(false);
   const [sosChaje, setSosChaje] = useState(false);
@@ -127,10 +129,10 @@ export default function Home() {
         <button
           className="map-flotan-rapòte"
           onClick={() => navigate("/rapòte")}
-          title="Fè yon rapò"
+          title={t("home.rapòte")}
         >
           <span style={{ fontSize: 18 }}>📢</span>
-          Fè yon rapò
+          {t("home.rapòte")}
         </button>
       </div>
       <NavBar />

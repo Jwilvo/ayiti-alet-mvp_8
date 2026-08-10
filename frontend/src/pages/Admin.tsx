@@ -1,6 +1,7 @@
 import { useEffect, useState, ReactNode } from "react";
-import { api, AdminStats, DuplicateGroup, Report, getSessionUser, saveSession, clearSession } from "../api";
-import { categoryMeta, timeAgo } from "../categories";
+import { api, AdminStats, AdminTandans, DuplicateGroup, Report, getSessionUser, saveSession, clearSession } from "../api";
+import { categoryMeta, timeAgo, severityColor } from "../categories";
+import IncidentMap from "../components/IncidentMap";
 
 function Shell({ children }: { children: ReactNode }) {
   return (
@@ -69,6 +70,81 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
   );
 }
 
+function TandansPanel() {
+  const [tandans, setTandans] = useState<AdminTandans | null>(null);
+
+  useEffect(() => {
+    api.adminTandans().then(setTandans).catch(() => {});
+  }, []);
+
+  if (!tandans) return null;
+
+  const maksPaJou = Math.max(1, ...tandans.paJou.map((j) => j.n));
+  const maksPaLè = Math.max(1, ...tandans.paLè.map((l) => l.n));
+  const lèMap = Object.fromEntries(tandans.paLè.map((l) => [l.lè, l.n]));
+
+  return (
+    <>
+      <div className="section-title"><h2>📈 Rapò sou 7 dènye jou</h2></div>
+      <div className="card">
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, height: 90 }}>
+          {tandans.paJou.map((j) => (
+            <div key={j.jou} style={{ flex: 1, textAlign: "center" }}>
+              <div
+                style={{
+                  height: `${Math.max(4, (j.n / maksPaJou) * 70)}px`,
+                  background: "var(--official)",
+                  borderRadius: "4px 4px 0 0",
+                  marginBottom: 4,
+                }}
+                title={`${j.n} rapò`}
+              />
+              <span style={{ fontSize: 9.5, color: "var(--text-muted)" }}>{j.jou.slice(5)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="section-title"><h2>🕐 Rapò pa lè jounen an</h2></div>
+      <div className="card">
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 70 }}>
+          {Array.from({ length: 24 }, (_, h) => (
+            <div
+              key={h}
+              style={{
+                flex: 1,
+                height: `${Math.max(3, ((lèMap[h] ?? 0) / maksPaLè) * 60)}px`,
+                background: "var(--amber)",
+                borderRadius: "2px 2px 0 0",
+              }}
+              title={`${h}h — ${lèMap[h] ?? 0} rapò`}
+            />
+          ))}
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 4 }}>
+          <span style={{ fontSize: 9.5, color: "var(--text-muted)" }}>0h</span>
+          <span style={{ fontSize: 9.5, color: "var(--text-muted)" }}>12h</span>
+          <span style={{ fontSize: 9.5, color: "var(--text-muted)" }}>23h</span>
+        </div>
+      </div>
+
+      <div className="section-title"><h2>🗺️ Kat chalè ensidan yo</h2></div>
+      <IncidentMap
+        center={[18.9712, -72.2852]}
+        zoom={8}
+        height={260}
+        markers={tandans.kèdKat.map((k, i) => ({
+          id: String(i),
+          lat: k.latitude,
+          lng: k.longitude,
+          color: severityColor(k.niveauIjans),
+          label: k.niveauIjans,
+        }))}
+      />
+    </>
+  );
+}
+
 function Dashboard({ onOut }: { onOut: () => void }) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [reports, setReports] = useState<Report[] | null>(null);
@@ -131,6 +207,8 @@ function Dashboard({ onOut }: { onOut: () => void }) {
             ))}
           </div>
         )}
+
+        <TandansPanel />
 
         <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
           {(["nouvo", "verifye", "rejte", "tout"] as const).map((t) => (

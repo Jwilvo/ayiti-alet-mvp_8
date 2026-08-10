@@ -4,14 +4,16 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import { useRapòPaNivo } from "../alertFeed";
 import { dejaLi, markeLi } from "../unread";
-import { useVèsyonMakè } from "../hooks";
+import { useVèsyonMakè, useLangVèsyon } from "../hooks";
 import { categoryMeta, timeAgo } from "../categories";
+import { t } from "../i18n";
 
 export default function Alet() {
   const { lis, chaje } = useRapòPaNivo("ijans");
   const [lòd, setLòd] = useState<"nouvo" | "ansyen">("nouvo");
   const navigate = useNavigate();
   useVèsyonMakè();
+  useLangVèsyon();
 
   const lisKlase = [...lis].sort((a, b) => {
     const tA = new Date(a.rapò.kreyeNan).getTime();
@@ -41,7 +43,7 @@ export default function Alet() {
       <TopBar />
       <div className="screen">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-          <h1 style={{ fontSize: 20, margin: 0 }}>🔔 Alèt (toupre w)</h1>
+          <h1 style={{ fontSize: 20, margin: 0 }}>{t("alèt.tit")}</h1>
           {konteAPokoLi > 0 && <span className="tag tag-grav">{konteAPokoLi} nouvo</span>}
         </div>
         <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 0 }}>
@@ -58,7 +60,7 @@ export default function Alet() {
             }}
             onClick={() => setLòd("nouvo")}
           >
-            ↓ Pi nouvo an premye
+            {t("alèt.triyaj.nouvo")}
           </button>
           <button
             className="btn btn-ghost"
@@ -69,11 +71,11 @@ export default function Alet() {
             }}
             onClick={() => setLòd("ansyen")}
           >
-            ↑ Pi ansyen an premye
+            {t("alèt.triyaj.ansyen")}
           </button>
         </div>
 
-        {lis.length === 0 && <p className="empty">Pa gen okenn alèt nan zòn ou kounye a. Sa bon sinyal!</p>}
+        {lis.length === 0 && <p className="empty">{t("alèt.vid")}</p>}
 
         {lisKlase.map(({ rapò, distKm }) => {
           const meta = categoryMeta(rapò.kategori);
@@ -102,7 +104,7 @@ export default function Alet() {
                 <div className="report-meta">
                   {meta.label} · {timeAgo(rapò.kreyeNan)}
                   {distKm !== null && ` · ${distKm.toFixed(1)} km`}
-                  {li && " · li deja"}
+                  {li && ` · ${t("alèt.li_deja")}`}
                 </div>
               </div>
             </div>

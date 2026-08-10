@@ -12,6 +12,7 @@ import Nouvèl from "./pages/Nouvel";
 import Meni from "./pages/Meni";
 import Reglaj from "./pages/meni/Reglaj";
 import Kont from "./pages/meni/Kont";
+import LangPage from "./pages/meni/Lang";
 import ReglajAlèt from "./pages/meni/ReglajAlet";
 import VizyalizasyonMap from "./pages/meni/VizyalizasyonMap";
 import NouvèlReglaj from "./pages/meni/NouvelReglaj";
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/meni" element={<Meni />} />
         <Route path="/meni/reglaj" element={<Reglaj />} />
         <Route path="/meni/reglaj/kont" element={<Kont />} />
+        <Route path="/meni/reglaj/lang" element={<LangPage />} />
         <Route path="/meni/reglaj/alèt" element={<ReglajAlèt />} />
         <Route path="/meni/reglaj/kat" element={<VizyalizasyonMap />} />
         <Route path="/meni/reglaj/nouvèl" element={<NouvèlReglaj />} />

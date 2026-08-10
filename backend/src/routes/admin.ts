@@ -152,3 +152,28 @@ router.get("/duplicates", async (_req, res, next) => {
 });
 
 export default router;
+
+// Tandans sou 7 dènye jou yo (pou grafik) ak done brit pou kat chalè (lat/lng
+// tout rapò yo, pou frontend la ka afiche dansite jewografik).
+router.get("/tandans", async (_req, res, next) => {
+  try {
+    const [paJou, paLè, kèdKat] = await Promise.all([
+      pool.query(
+        `SELECT to_char(date_trunc('day', kreye_nan), 'YYYY-MM-DD') AS jou, COUNT(*)::int AS n
+         FROM reports WHERE kreye_nan > now() - interval '7 days'
+         GROUP BY 1 ORDER BY 1`
+      ),
+      pool.query(
+        `SELECT EXTRACT(HOUR FROM kreye_nan)::int AS lè, COUNT(*)::int AS n
+         FROM reports GROUP BY 1 ORDER BY 1`
+      ),
+      pool.query(
+        `SELECT ST_Y(lokalizasyon::geometry) AS latitude, ST_X(lokalizasyon::geometry) AS longitude, niveau_ijans AS "niveauIjans"
+         FROM reports ORDER BY kreye_nan DESC LIMIT 500`
+      ),
+    ]);
+    res.json({ paJou: paJou.rows, paLè: paLè.rows, kèdKat: kèdKat.rows });
+  } catch (e) {
+    next(e);
+  }
+});

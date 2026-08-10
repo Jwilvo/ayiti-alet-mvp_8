@@ -12,6 +12,7 @@ import uploadRoutes, { UPLOAD_DIR } from "./routes/uploads";
 import zoneRoutes from "./routes/zones";
 import notificationRoutes from "./routes/notifications";
 import sijesyonRoutes from "./routes/sijesyon";
+import lyeRoutes from "./routes/lye";
 
 async function main() {
   const app = express();
@@ -52,6 +53,8 @@ async function main() {
 
   app.use("/auth/login", authLimiter);
   app.use("/auth/register", authLimiter);
+  app.use("/auth/mande-reyajisman", authLimiter);
+  app.use("/auth/konfime-reyajisman", authLimiter);
   app.use("/reports", kreyasyonLimiter);
   app.use("/sos/trigger", kreyasyonLimiter);
   app.use("/uploads", kreyasyonLimiter);
@@ -66,6 +69,7 @@ async function main() {
   app.use("/zones", zoneRoutes);
   app.use("/notifications", notificationRoutes);
   app.use("/sijesyon", sijesyonRoutes);
+  app.use("/lye", lyeRoutes);
 
   app.use((_req, res) => res.status(404).json({ erè: "Wout la pa egziste." }));
 

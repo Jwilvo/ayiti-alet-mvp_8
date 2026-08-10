@@ -109,6 +109,18 @@ npm run dev          # http://localhost:5173
 - ✅ **Kat la ak koulè pi sonm/mwens ankonbre**: chanje tuil OpenStreetMap estanda yo
   (ki gen anpil koulè) pou vèsyon "Dark Matter" CARTO a, ki matche pi byen ak tèm nwa
   aplikasyon an, san bezwen okenn kle API.
+- ✅ **Reyajiste modpas bliye**: flux konplè (mande kòd → kòd 6 chif → konfime → nouvo
+  modpas) teste an dirèk. Kòd la voye pa SMS si `TWILIO_*` konfigire; si non, li ekri nan
+  jounal sèvè a sèlman (JANM nan repons API a, pou rezon sekirite).
+- ✅ **"Lye mw yo" konplè**: itilizatè ka anrejistre jiska 5 adrès (kay, travay, fanmi),
+  chwazi pozisyon dirèkteman sou yon kat, e wè konbyen alèt "toupre" chak lye — san yo pa
+  bezwen fizikman ye la.
+- ✅ **Kat chalè + estatistik nan Admin**: grafik rapò sou 7 dènye jou, distribisyon pa lè
+  jounen an, ak yon kat ki montre pozisyon tout rapò yo (dansite jewografik).
+- ✅ **Plizyè lang (pati)**: Kreyòl/Français/English disponib nan Meni → Reglaj → Lang.
+  Navigasyon prensipal la (Akèy, Alèt, Sèvis, Nouvèl, Meni), Akèy, ak Alèt/Nouvèl tradui
+  konplètman. Rès aplikasyon an (kòmantè, admin, sèten paj Meni) rete an Kreyòl pou
+  kounye a — kouvèti a ap ogmante nan pwochen vèsyon yo.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

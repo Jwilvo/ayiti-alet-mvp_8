@@ -5,6 +5,7 @@ import { clearSession, getSessionUser } from "../../api";
 
 const ATIKÒL = [
   { to: "/meni/reglaj/kont", label: "Kont", icon: "👤" },
+  { to: "/meni/reglaj/lang", label: "Lang", icon: "🌐" },
   { to: "/meni/reglaj/alèt", label: "Reglaj alèt", icon: "🔔" },
   { to: "/meni/reglaj/kat", label: "Vizyalizasyon map", icon: "🗺️" },
   { to: "/meni/reglaj/nouvèl", label: "Nouvèl", icon: "ℹ️" },

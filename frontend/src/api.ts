@@ -39,6 +39,14 @@ export interface Place {
 }
 export interface CurrentUser { id: string; nom: string; telefon: string; komin?: string; katye?: string; wòl?: "sitwayen" | "admin"; }
 
+export interface LyeItilizatè { id: string; non: string; latitude: number; longitude: number; kreyeNan: string; }
+
+export interface AdminTandans {
+  paJou: { jou: string; n: number }[];
+  paLè: { lè: number; n: number }[];
+  kèdKat: { latitude: number; longitude: number; niveauIjans: string }[];
+}
+
 export interface AdminStats {
   totalRapò: number;
   totalItilizatè: number;
@@ -167,6 +175,19 @@ export const api = {
   sosGet: (id: string) => request<SosStatus>(`/sos/${id}`),
 
   getKontakIjans: () => request<KontakIjans[]>("/sos/mwen/kontak-ijans"),
+
+  mandeReyajisman: (telefon: string) =>
+    request<{ ok: boolean; mesaj: string }>("/auth/mande-reyajisman", { method: "POST", body: JSON.stringify({ telefon }) }),
+
+  konfimeReyajisman: (telefon: string, kòd: string, nouvoModDePasse: string) =>
+    request<{ ok: boolean }>("/auth/konfime-reyajisman", { method: "POST", body: JSON.stringify({ telefon, kòd, nouvoModDePasse }) }),
+
+  listLye: () => request<LyeItilizatè[]>("/lye"),
+  ajouteLye: (non: string, latitude: number, longitude: number) =>
+    request<LyeItilizatè>("/lye", { method: "POST", body: JSON.stringify({ non, latitude, longitude }) }),
+  efaseLye: (id: string) => request<{ ok: boolean }>(`/lye/${id}`, { method: "DELETE" }),
+
+  adminTandans: () => request<AdminTandans>("/admin/tandans"),
 
   setKontakIjans: (kontak: KontakIjans[]) =>
     request<KontakIjans[]>("/sos/mwen/kontak-ijans", { method: "PUT", body: JSON.stringify(kontak) }),

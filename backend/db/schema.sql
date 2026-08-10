@@ -171,3 +171,31 @@ CREATE TABLE IF NOT EXISTS sijesyon (
   kò         text NOT NULL,
   kreye_nan  timestamptz NOT NULL DEFAULT now()
 );
+
+-- Kòd reyajisman modpas — yon kòd 6 chif ki gen yon dat ekspirasyon (10 min).
+-- Nan pwodiksyon, kòd la voye pa SMS (Twilio, si FIREBASE... non pa konfonn,
+-- gade TWILIO_* nan .env). Si Twilio pa konfigire, sèvè a ekri kòd la nan
+-- jounal (console) sèlman — pa janm nan repons API a — pou rezon sekirite.
+CREATE TABLE IF NOT EXISTS reyajisman_modpas (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kòd_ash      text NOT NULL,
+  itilize      boolean NOT NULL DEFAULT false,
+  ekspire_nan  timestamptz NOT NULL,
+  kreye_nan    timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS reyajisman_modpas_user_id_idx ON reyajisman_modpas (user_id);
+
+-- "Lye mw yo" — adrès itilizatè a anrejistre (kay, travay, fanmi lòt kote)
+-- pou l ka swiv alèt pou plizyè kote, pa sèlman kote li fizikman ye a.
+CREATE TABLE IF NOT EXISTS lye_itilizatè (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  non        text NOT NULL,
+  latitude   double precision NOT NULL,
+  longitude  double precision NOT NULL,
+  kreye_nan  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS lye_itilizatè_user_id_idx ON lye_itilizatè (user_id);

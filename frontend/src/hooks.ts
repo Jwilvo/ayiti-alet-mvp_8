@@ -3,10 +3,18 @@ import { api } from "./api";
 import { PendingReport, subscribeQueue } from "./offline";
 import { ActiveSos, subscribeSos } from "./sos";
 import { abòneChanjman } from "./unread";
+import { abòneLang } from "./i18n";
 
 export function useVèsyonMakè(): number {
   const [v, setV] = useState(0);
   useEffect(() => abòneChanjman(() => setV((x) => x + 1)), []);
+  return v;
+}
+
+// Fòse re-rann lè lang lan chanje — itilize nan tout kòmpozan ki sèvi ak t()
+export function useLangVèsyon(): number {
+  const [v, setV] = useState(0);
+  useEffect(() => abòneLang(() => setV((x) => x + 1)), []);
   return v;
 }
 

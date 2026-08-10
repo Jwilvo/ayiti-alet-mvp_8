@@ -1,9 +1,11 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { z } from "zod";
 import { pool } from "../pg";
 import { AuthedRequest, JWT_SECRET, requireAuth } from "../middleware/auth";
+import { voyeSms } from "../sms";
 
 const router = Router();
 
@@ -148,3 +150,75 @@ router.patch("/pozisyon", requireAuth, async (req: AuthedRequest, res, next) => 
 });
 
 export default router;
+
+// ============ Reyajisman modpas ============
+
+const mandeSchema = z.object({ telefon: z.string().min(8) });
+
+router.post("/mande-reyajisman", async (req, res, next) => {
+  const parsed = mandeSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ erè: "Bay yon nimewo telefòn valid." });
+
+  try {
+    const { rows } = await pool.query("SELECT id FROM users WHERE telefon = $1", [parsed.data.telefon]);
+    // Repons lan menm si kont lan pa egziste — evite konfime/enfime yon
+    // nimewo telefòn kòrèk pou moun ki ta eseye "devine" kont ki egziste.
+    if (!rows[0]) {
+      return res.json({ ok: true, mesaj: "Si kont lan egziste, yon kòd voye pa SMS." });
+    }
+    const userId = rows[0].id;
+
+    const kòd = Math.floor(100000 + Math.random() * 900000).toString();
+    const kòdAsh = crypto.createHash("sha256").update(kòd).digest("hex");
+    const ekspireNan = new Date(Date.now() + 10 * 60 * 1000);
+
+    await pool.query(
+      `INSERT INTO reyajisman_modpas (user_id, kòd_ash, ekspire_nan) VALUES ($1, $2, $3)`,
+      [userId, kòdAsh, ekspireNan]
+    );
+
+    await voyeSms(
+      parsed.data.telefon,
+      `Ayiti Alèt — Kòd pou reyajiste modpas ou a: ${kòd}. Li ekspire nan 10 minit.`
+    );
+
+    res.json({ ok: true, mesaj: "Si kont lan egziste, yon kòd voye pa SMS." });
+  } catch (e) {
+    next(e);
+  }
+});
+
+const konfimeSchema = z.object({
+  telefon: z.string().min(8),
+  kòd: z.string().length(6),
+  nouvoModDePasse: z.string().min(6),
+});
+
+router.post("/konfime-reyajisman", async (req, res, next) => {
+  const parsed = konfimeSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ erè: "Done envalid — modpas dwe gen omwen 6 karaktè." });
+  const { telefon, kòd, nouvoModDePasse } = parsed.data;
+
+  try {
+    const { rows: userRows } = await pool.query("SELECT id FROM users WHERE telefon = $1", [telefon]);
+    if (!userRows[0]) return res.status(400).json({ erè: "Kòd la pa valid oswa li ekspire." });
+    const userId = userRows[0].id;
+
+    const kòdAsh = crypto.createHash("sha256").update(kòd).digest("hex");
+    const { rows: kòdRows } = await pool.query(
+      `SELECT id FROM reyajisman_modpas
+       WHERE user_id = $1 AND kòd_ash = $2 AND itilize = false AND ekspire_nan > now()
+       ORDER BY kreye_nan DESC LIMIT 1`,
+      [userId, kòdAsh]
+    );
+    if (!kòdRows[0]) return res.status(400).json({ erè: "Kòd la pa valid oswa li ekspire." });
+
+    const hash = await bcrypt.hash(nouvoModDePasse, 10);
+    await pool.query("UPDATE users SET mot_de_pass = $1 WHERE id = $2", [hash, userId]);
+    await pool.query("UPDATE reyajisman_modpas SET itilize = true WHERE id = $1", [kòdRows[0].id]);
+
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
