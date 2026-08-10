@@ -52,6 +52,59 @@ Nan Android Studio: Build → Generate Signed Bundle (.aab) → soumèt sou Goog
 
 Apre chak chanjman kòd: `npm run cap:sync` anvan ou re-bati nan Android Studio/Xcode.
 
+---
+
+## Konfigire Notifikasyon Push (Firebase Cloud Messaging)
+
+### Etap 1 — Kreye pwojè Firebase (gratis)
+
+1. Ale sou [console.firebase.google.com](https://console.firebase.google.com), konekte ak
+   yon kont Google, peze **"Add project"** (Ajoute pwojè)
+2. Bay li yon non (egzanp "Ayiti Alèt"), dezaktive Google Analytics si ou pa bezwen l
+   (opsyonèl), peze "Create project"
+
+### Etap 2 — Ajoute yon app Web
+
+1. Nan dashboard pwojè a, peze ikòn **"</>"** (Web) pou ajoute yon app
+2. Bay li yon ti non (egzanp "ayiti-alet-web"), **pa** koche "Firebase Hosting"
+3. Firebase ap montre yon bwat `firebaseConfig` ak plizyè valè (`apiKey`, `authDomain`,
+   `projectId`, elatriye) — **kopye yo**, ou ap bezwen yo pou varyab `VITE_FIREBASE_*` yo
+
+### Etap 3 — Aktive Cloud Messaging ak jenere kle VAPID
+
+1. Nan meni goch, ale nan **"Project settings"** (ikòn wou) → tab **"Cloud Messaging"**
+2. Anba "Web configuration", peze **"Generate key pair"** — sa jenere yon **kle VAPID**
+3. Kopye kle sa a → se valè `VITE_FIREBASE_VAPID_KEY`
+
+### Etap 4 — Jenere kle sèvis (pou backend la)
+
+1. Toujou nan "Project settings" → tab **"Service accounts"**
+2. Peze **"Generate new private key"** → li telechaje yon fichye `.json`
+3. Louvri fichye sa a ak Notepad, kopye **TOUT kontni li** (yon sèl liy JSON) — se valè
+   `FIREBASE_SERVICE_ACCOUNT` backend la
+
+### Etap 5 — Konfigire varyab yo
+
+**Sou Render, backend (`ayiti-alet-backend`) → Environment**:
+- `FIREBASE_SERVICE_ACCOUNT` = tout kontni fichye JSON etap 4 la (kole l tankou l ye a)
+
+**Sou Render, frontend (`ayiti-alet-frontend`) → Environment**:
+- `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`,
+  `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`
+  (soti nan Etap 2), `VITE_FIREBASE_VAPID_KEY` (soti nan Etap 3)
+
+Apre ou ajoute varyab yo, fè yon **"Manual Deploy"** sou tou de sèvis yo pou yo pran nouvo
+konfigirasyon an.
+
+### Verifye li mache
+
+1. Konekte sou aplikasyon an, aksepte pèmisyon notifikasyon lè navigatè a mande l
+2. `curl https://api.tondomèn.com/notifications/estati` dwe reponn `{"aktif":true}`
+3. Fè yon rapò tès pre yon lòt kont ki gen tokèn anrejistre — kont sa a dwe resevwa yon
+   notifikasyon ak son nan kèk segond
+
+---
+
 ## Lis Verifikasyon Apre Deplwaman
 
 - [ ] `curl https://api.tondomèn.com/health` reponn `{"statut":"ok",...}`

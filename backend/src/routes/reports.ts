@@ -5,6 +5,9 @@ import { pool } from "../pg";
 import { AuthedRequest, optionalAuth, requireAuth } from "../middleware/auth";
 import { analizeImaj, distansHamming } from "../util/imageAnalysis";
 import { UPLOAD_DIR } from "./uploads";
+import { voyeNotifikasyon } from "../firebase";
+
+const RAYON_IJANS_MÈT = 15000; // menm sèy ak frontend la (15km) — gade categories.ts
 
 const router = Router();
 
@@ -141,6 +144,11 @@ router.post("/", optionalAuth, async (req: AuthedRequest, res, next) => {
       otoriteAvize: otoritePouKategori(data.kategori),
       avètisman,
     });
+
+    // Fire-and-forget: voye notifikasyon push bay itilizatè ki toupre rapò a
+    // (menm sèy 15km ak sa frontend lan itilize pou tag "ijans pou ou"). Nou
+    // pa "await" sa a pou pa fè moun k ap kreye rapò a tann push la voye.
+    avizeItilizatèToupre(report).catch((e) => console.error("Erè notifikasyon push:", e));
   } catch (e) {
     await client.query("ROLLBACK");
     next(e);
@@ -241,5 +249,43 @@ router.post("/:id/confirm", requireAuth, async (req: AuthedRequest, res, next) =
     next(e);
   }
 });
+
+// Jwenn tout itilizatè ki gen yon pozisyon konni ki nan 15km yon rapò, ki gen
+// omwen yon tokèn FCM, epi voye yo yon notifikasyon push. Efase tokèn ki
+// "mouri" (aparèy ki dezenstale app la) pou kenbe baz done a pwòp.
+async function avizeItilizatèToupre(report: { id: string; kategori: string; tit: string; latitude: number; longitude: number; niveauIjans: string }) {
+  const { rows } = await pool.query(
+    `SELECT ft.tokèn
+     FROM users u
+     JOIN fcm_tokens ft ON ft.user_id = u.id
+     WHERE u.dènye_pozisyon IS NOT NULL
+       AND ST_DWithin(u.dènye_pozisyon, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)`,
+    [report.longitude, report.latitude, RAYON_IJANS_MÈT]
+  );
+  const tokèns: string[] = rows.map((r) => r.tokèn);
+  if (tokèns.length === 0) return;
+
+  const meta = categoryMeta(report.kategori);
+  const tokènMouri = await voyeNotifikasyon(tokèns, {
+    tit: `${meta.emoji} ${report.niveauIjans === "grav" ? "Alèt Ijans" : "Nouvo Rapò"} Toupre W`,
+    kò: report.tit,
+    done_: { rapòId: report.id },
+  });
+
+  if (tokènMouri.length > 0) {
+    await pool.query(`DELETE FROM fcm_tokens WHERE tokèn = ANY($1)`, [tokènMouri]);
+  }
+}
+
+function categoryMeta(kategori: string): { emoji: string } {
+  const emoji: Record<string, string> = {
+    dife: "🔥", aksidan: "🚗", inondasyon: "🌊", kout_zam: "🔫",
+    kidnaping: "🚨", vòl: "🧤", gang_ame: "⚠️", vyolans: "✊",
+    ijans_medikal: "🩺", wout_bloke: "🚧", moun_disparèt: "🔍",
+    timoun_disparèt: "🧒", glisman_tè: "⛰️", tranblemanntè: "🏚️",
+    pann_kouran: "💡", fwit_gaz: "🛢️", zak_sispèk: "👀",
+  };
+  return { emoji: emoji[kategori] ?? "❗" };
+}
 
 export default router;

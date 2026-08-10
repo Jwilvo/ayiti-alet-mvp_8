@@ -126,3 +126,24 @@ CREATE TABLE IF NOT EXISTS depatman_zòn (
 );
 
 CREATE INDEX IF NOT EXISTS depatman_zòn_zòn_idx ON depatman_zòn USING GIST (zòn);
+
+-- Dènye pozisyon apwoksimatif itilizatè a (mete ajou an silans lè aplikasyon
+-- an louvri, menm jan ak useUserPosition() nan frontend la) — sèvi sèlman
+-- pou detèmine ki moun ki "toupre" yon nouvo rapò pou nou ka voye yo yon
+-- notifikasyon push. Nou pa estoke istorik, sèlman dènye pwen an.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS dènye_pozisyon geography(Point, 4326);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS dènye_pozisyon_nan timestamptz;
+
+CREATE INDEX IF NOT EXISTS users_dènye_pozisyon_idx ON users USING GIST (dènye_pozisyon);
+
+-- Tokèn Firebase Cloud Messaging pou chak aparèy yon itilizatè konekte sou —
+-- yon moun ka gen plizyè aparèy (telefòn + òdinatè), se pou sa se yon tab
+-- apa olye yon sèl kolòn sou "users".
+CREATE TABLE IF NOT EXISTS fcm_tokens (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  tokèn      text NOT NULL UNIQUE,
+  kreye_nan  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS fcm_tokens_user_id_idx ON fcm_tokens (user_id);

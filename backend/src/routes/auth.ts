@@ -122,4 +122,29 @@ router.patch("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   }
 });
 
+const pozisyonSchema = z.object({
+  latitude: z.number(),
+  longitude: z.number(),
+});
+
+// Mete ajou dènye pozisyon apwoksimatif itilizatè a an silans (aplikasyon an
+// rele wout sa a otomatikman lè li jwenn pozisyon telefòn nan — pa gen bouton
+// ni aksyon itilizatè a bezwen fè). Sèvi sèlman pou detèmine ki moun ki
+// "toupre" yon nouvo rapò pou nou ka voye yo yon notifikasyon push.
+router.patch("/pozisyon", requireAuth, async (req: AuthedRequest, res, next) => {
+  const parsed = pozisyonSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ erè: "Pozisyon envalid." });
+  try {
+    await pool.query(
+      `UPDATE users SET dènye_pozisyon = ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography,
+              dènye_pozisyon_nan = now()
+       WHERE id = $3`,
+      [parsed.data.longitude, parsed.data.latitude, req.userId]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 export default router;

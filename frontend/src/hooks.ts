@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { api } from "./api";
 import { PendingReport, subscribeQueue } from "./offline";
 import { ActiveSos, subscribeSos } from "./sos";
 
@@ -51,6 +52,11 @@ export function useUserPosition(): { lat: number; lng: number } | null {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             pozisyonKache = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            // Silans: si moun nan konekte, voye pozisyon an bay backend la
+            // pou l ka sèvi pou vize notifikasyon push "moun ki toupre".
+            if (localStorage.getItem("ayiti_alet_token")) {
+              api.mizajouPozisyon(pozisyonKache.lat, pozisyonKache.lng).catch(() => {});
+            }
             resolve();
           },
           () => resolve(),

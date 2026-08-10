@@ -70,6 +70,13 @@ npm run dev          # http://localhost:5173
   `ST_Contains` ak yon tolerans 5km pou konfime ki depatman yon pozisyon ye ladan — sa sèvi
   kòm baz pou fonksyon zòn ki pi presi nan lavni. Limit jewografik yo nan
   `backend/db/depatman_zòn_seed.sql` (Natural Earth, domèn piblik).
+- ✅ **Notifikasyon push (son + vibrasyon)**: itilize Firebase Cloud Messaging. Aplikasyon an
+  mande pèmisyon notifikasyon an silans (pa gen bouton apa), anrejistre tokèn aparèy la,
+  epi backend la voye yon notifikasyon bay tout itilizatè ki nan 15km yon nouvo rapò lè l
+  kreye. Yon sèl service worker konbine (`frontend/src/sw.ts`, estrateji "injectManifest")
+  jere tou de mòd offline (Workbox) AK notifikasyon background (Firebase), pou evite konfli
+  ant 2 service worker. San `FIREBASE_SERVICE_ACCOUNT` (backend) ak varyab `VITE_FIREBASE_*`
+  (frontend) konfigire, fonksyon sa a dezaktive an silans san l pa kraze rès aplikasyon an.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

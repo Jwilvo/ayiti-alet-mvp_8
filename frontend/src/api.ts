@@ -100,6 +100,12 @@ export const api = {
   updateMe: (body: { komin?: string; katye?: string }) =>
     request<CurrentUser>("/auth/me", { method: "PATCH", body: JSON.stringify(body) }),
 
+  mizajouPozisyon: (latitude: number, longitude: number) =>
+    request("/auth/pozisyon", { method: "PATCH", body: JSON.stringify({ latitude, longitude }) }),
+
+  anrejistreTokènPush: (tokèn: string) =>
+    request("/notifications/token", { method: "POST", body: JSON.stringify({ tokèn }) }),
+
   listReports: (params: { kategori?: string; niveauIjans?: string; komin?: string; limit?: number } = {}) => {
     const qs = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined)) as any).toString();
     return request<Report[]>(`/reports${qs ? `?${qs}` : ""}`);
