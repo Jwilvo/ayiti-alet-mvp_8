@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 export interface CategoryMeta { key: string; label: string; emoji: string; }
 
 export const CATEGORIES: CategoryMeta[] = [
@@ -22,7 +24,8 @@ export const CATEGORIES: CategoryMeta[] = [
 ];
 
 export function categoryMeta(key: string): CategoryMeta {
-  return CATEGORIES.find((c) => c.key === key) ?? { key, label: key, emoji: "❗" };
+  const bazik = CATEGORIES.find((c) => c.key === key) ?? { key, label: key, emoji: "❗" };
+  return { ...bazik, label: t(`kat.${key}`) };
 }
 
 export function severityColor(niveau: string) {

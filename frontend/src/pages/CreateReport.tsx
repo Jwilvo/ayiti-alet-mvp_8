@@ -7,6 +7,8 @@ import ConnectivityBanner from "../components/ConnectivityBanner";
 import { api, getSessionUser, KontakIjans } from "../api";
 import { queueReport } from "../offline";
 import { CATEGORIES } from "../categories";
+import { t } from "../i18n";
+import { useLangVèsyon } from "../hooks";
 
 const PÒTOPRENS_CENTER: [number, number] = [18.5392, -72.3364];
 const MAKS_FOTO = 3;
@@ -14,6 +16,7 @@ const MAKS_FOTO = 3;
 interface FotoPyèsJwenn { url: string; ap_telechaje: boolean; erè?: string; previewLokal: string; }
 
 export default function CreateReport() {
+  useLangVèsyon();
   const [params] = useSearchParams();
   const navigate = useNavigate();
 
@@ -221,13 +224,13 @@ export default function CreateReport() {
       <TopBar />
       <div className="screen">
         <ConnectivityBanner />
-        <h1 style={{ fontSize: 20 }}>Fè yon rapò</h1>
+        <h1 style={{ fontSize: 20 }}>{t("rapò.tit")}</h1>
         <p style={{ color: "var(--text-muted)", fontSize: 13.5, marginTop: 0 }}>
-          Chwazi kategori a, dekri sa k ap pase, epi voye. Ou ka rete anonim si ou vle.
+          {t("rapò.deskripsyon_paj")}
         </p>
 
         <form onSubmit={soumèt}>
-          <label>Kategori</label>
+          <label>{t("rapò.kategori")}</label>
           <div className="category-grid">
             {CATEGORIES.map((c) => (
               <div
@@ -236,23 +239,23 @@ export default function CreateReport() {
                 onClick={() => setKategori(c.key)}
               >
                 <span className="emoji">{c.emoji}</span>
-                {c.label}
+                {t(`kat.${c.key}`)}
               </div>
             ))}
           </div>
 
-          <label>Tit rapò a</label>
-          <input value={tit} onChange={(e) => setTit(e.target.value)} placeholder="Egzanp: Dife nan yon depo" />
+          <label>{t("rapò.tit_label")}</label>
+          <input value={tit} onChange={(e) => setTit(e.target.value)} placeholder={t("rapò.tit_placeholder")} />
 
-          <label>Deskripsyon</label>
+          <label>{t("rapò.deskripsyon_label")}</label>
           <textarea
             rows={4}
             value={deskripsyon}
             onChange={(e) => setDeskripsyon(e.target.value)}
-            placeholder="Bay plis detay sou sa k ap pase a…"
+            placeholder={t("rapò.deskripsyon_placeholder")}
           />
 
-          <label>Foto (opsyonèl, maksimòm {MAKS_FOTO})</label>
+          <label>{t("rapò.foto")} ({MAKS_FOTO})</label>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
             {foto.map((f) => (
               <div key={f.previewLokal} style={{ position: "relative", width: 76, height: 76 }}>
@@ -296,15 +299,15 @@ export default function CreateReport() {
             )}
           </div>
 
-          <label>Adrès oswa pwen repè (opsyonèl)</label>
-          <input value={adrès} onChange={(e) => setAdrès(e.target.value)} placeholder="Egzanp: Delmas 33, toupre famasi a" />
+          <label>{t("rapò.adrès")}</label>
+          <input value={adrès} onChange={(e) => setAdrès(e.target.value)} placeholder="Delmas 33..." />
 
-          <label>Kote ensidan an ye</label>
+          <label>{t("rapò.kote")}</label>
           <button type="button" className="btn btn-ghost btn-block" onClick={pranPozisyon} disabled={chajePozisyon}>
             {chajePozisyon ? <span className="spinner" /> : "📍"}
             {lokalizasyon
               ? `Pozisyon jwenn (${lokalizasyon.lat.toFixed(3)}, ${lokalizasyon.lng.toFixed(3)})`
-              : "Itilize pozisyon aktyèl mwen"}
+              : t("rapò.pozisyon_aktyèl")}
           </button>
           <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "8px 0" }}>
             Oswa peze dirèkteman sou kat la pou presize kote a:
@@ -317,7 +320,7 @@ export default function CreateReport() {
             onPickLocation={(lat, lng) => setLokalizasyon({ lat, lng })}
           />
 
-          <label>Nivo ijans</label>
+          <label>{t("rapò.nivo_ijans")}</label>
           <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
             {(["ba", "mwayen", "grav"] as const).map((n) => (
               <button
@@ -331,7 +334,7 @@ export default function CreateReport() {
                   color: niveauIjans === n ? "var(--text)" : "var(--text-muted)",
                 }}
               >
-                {n === "ba" ? "Ba" : n === "mwayen" ? "Mwayen" : "Grav"}
+                {n === "ba" ? t("rapò.ba") : n === "mwayen" ? t("rapò.mwayen") : t("rapò.grav")}
               </button>
             ))}
           </div>
@@ -343,13 +346,13 @@ export default function CreateReport() {
               checked={anonim}
               onChange={(e) => setAnonim(e.target.checked)}
             />
-            Voye rapò a san non mwen (anonim)
+            {t("rapò.anonim")}
           </label>
 
           {erè && <div className="banner banner-error">{erè}</div>}
 
           <button className="btn btn-urgent btn-block" type="submit" disabled={loading} style={{ marginTop: 6 }}>
-            {loading ? <span className="spinner" /> : "Voye rapò a"}
+            {loading ? <span className="spinner" /> : t("rapò.voye")}
           </button>
         </form>
       </div>

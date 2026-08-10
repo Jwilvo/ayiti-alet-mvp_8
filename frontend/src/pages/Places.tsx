@@ -2,16 +2,19 @@ import { useEffect, useState } from "react";
 import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import { api, Place } from "../api";
+import { t } from "../i18n";
+import { useLangVèsyon } from "../hooks";
 
 const KATEGORI = [
-  { key: "", label: "Tout", emoji: "📍" },
-  { key: "sante", label: "Sante", emoji: "🏥" },
-  { key: "sekirite", label: "Sekirite", emoji: "🚓" },
-  { key: "administrasyon", label: "Administrasyon", emoji: "🏛️" },
-  { key: "transpò", label: "Transpò", emoji: "⛽" },
+  { key: "", kle: "sèvis.tout", emoji: "📍" },
+  { key: "sante", kle: "sèvis.sante", emoji: "🏥" },
+  { key: "sekirite", kle: "sèvis.sekirite", emoji: "🚓" },
+  { key: "administrasyon", kle: "sèvis.administrasyon", emoji: "🏛️" },
+  { key: "transpò", kle: "sèvis.transpò", emoji: "⛽" },
 ];
 
 export default function Places() {
+  useLangVèsyon();
   const [kategori, setKategori] = useState("");
   const [q, setQ] = useState("");
   const [places, setPlaces] = useState<Place[] | null>(null);
@@ -32,8 +35,8 @@ export default function Places() {
     <>
       <TopBar />
       <div className="screen">
-        <h1 style={{ fontSize: 20 }}>Sèvis toupre w</h1>
-        <input placeholder="Chèche yon non (egzanp: lopital, mairi…)" value={q} onChange={(e) => setQ(e.target.value)} />
+        <h1 style={{ fontSize: 20 }}>{t("sèvis.tit")}</h1>
+        <input placeholder={t("sèvis.chèche")} value={q} onChange={(e) => setQ(e.target.value)} />
 
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 14 }}>
           {KATEGORI.map((k) => (
@@ -49,14 +52,14 @@ export default function Places() {
               }}
               onClick={() => setKategori(k.key)}
             >
-              {k.emoji} {k.label}
+              {k.emoji} {t(k.kle)}
             </button>
           ))}
         </div>
 
         {erè && <div className="banner banner-error">{erè}</div>}
-        {!places && !erè && <p className="empty">Ap chèche…</p>}
-        {places && places.length === 0 && <p className="empty">Pa jwenn okenn kote ki koresponn.</p>}
+        {!places && !erè && <p className="empty">{t("sèvis.ap_chèche")}</p>}
+        {places && places.length === 0 && <p className="empty">{t("sèvis.pa_jwenn")}</p>}
 
         {places?.map((p) => (
           <div key={p.id} className="card">
