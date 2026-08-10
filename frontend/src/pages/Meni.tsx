@@ -6,13 +6,14 @@ import { t } from "../i18n";
 import { useLangVèsyon } from "../hooks";
 
 const ATIKÒL = [
-  { to: "/meni/pwofil-sekirite", label: "Pwofil sekirite", icon: "🛡️" },
-  { to: "/meni/lye-mw-yo", label: "Lye mw yo", icon: "📌" },
-  { to: "/meni/group", label: "Group", icon: "👥" },
-  { to: "/meni/envite", label: "Envite zanmiw", icon: "✉️" },
-  { to: "/meni/blog", label: "Blog", icon: "📰" },
-  { to: "/meni/sijesyon", label: "Sijesyon", icon: "💡" },
-  { to: "/meni/gid-kominotè", label: "Gid kominotè", icon: "📖" },
+  { to: "/meni/pwofil-sekirite", kle: "meni.pwofil_sekirite", icon: "🛡️" },
+  { to: "/meni/lye-mw-yo", kle: "meni.lye_mw_yo", icon: "📌" },
+  { to: "/meni/group", kle: "meni.group", icon: "👥" },
+  { to: "/meni/envite", kle: "meni.envite", icon: "✉️" },
+  { to: "/meni/blog", kle: "meni.blog", icon: "📰" },
+  { to: "/meni/sijesyon", kle: "meni.sijesyon", icon: "💡" },
+  { to: "/meni/gid-kominotè", kle: "meni.gid_kominotè", icon: "📖" },
+  { to: "/admin", kle: "meni.admin", icon: "🏛️" },
 ];
 
 export default function Meni() {
@@ -47,7 +48,7 @@ export default function Meni() {
           <Link key={a.to} to={a.to} style={{ textDecoration: "none", color: "inherit" }}>
             <div className="card" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
               <span style={{ fontSize: 19 }}>{a.icon}</span>
-              <strong style={{ fontSize: 14, flex: 1 }}>{a.label}</strong>
+              <strong style={{ fontSize: 14, flex: 1 }}>{t(a.kle)}</strong>
               <span style={{ color: "var(--text-muted)" }}>›</span>
             </div>
           </Link>
@@ -58,7 +59,7 @@ export default function Meni() {
         <Link to="/meni/reglaj" style={{ textDecoration: "none", color: "inherit" }}>
           <div className="card" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px" }}>
             <span style={{ fontSize: 19 }}>⚙️</span>
-            <strong style={{ fontSize: 14, flex: 1 }}>Reglaj</strong>
+            <strong style={{ fontSize: 14, flex: 1 }}>{t("meni.reglaj")}</strong>
             <span style={{ color: "var(--text-muted)" }}>›</span>
           </div>
         </Link>
