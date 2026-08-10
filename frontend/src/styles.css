@@ -59,8 +59,9 @@ a { color: inherit; }
 
 .map-flotan-sos-wrap {
   position: absolute;
-  bottom: 14px;
-  left: 14px;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 500;
   width: 76px;
   height: 76px;
@@ -100,7 +101,8 @@ a { color: inherit; }
 .map-flotan-rapòte {
   position: absolute;
   bottom: 20px;
-  right: 16px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 500;
   height: 46px;
   padding: 0 18px 0 14px;
@@ -119,7 +121,7 @@ a { color: inherit; }
 
 .map-flotan-banner {
   position: absolute;
-  top: 12px;
+  top: 100px;
   left: 12px;
   right: 12px;
   z-index: 500;
