@@ -86,6 +86,15 @@ npm run dev          # http://localhost:5173
 - ✅ **Avize kontak ijans lè yon rapò grav** (enspire pa "Private Groups"): apre yon
   itilizatè konekte fè yon rapò nivo "grav", aplikasyon an pwopoze voye yon SMS ak lyen
   rapò a bay kontak ijans li yo (reyitilize menm sistèm SOS la deja genyen).
+- ✅ **Nouvo navigasyon enspire pa SOSAFE**: Akèy la kounye a se yon **kat plenn ekran**
+  (bouton SOS ak Rapòte flote sou li). Navigasyon anba a gen 5 bouton: **Akèy** (kat),
+  **🔔 Alèt** (rapò nan 15km, ak yon badj ki konte kantite ki poko li, lekti yonn apre
+  lòt), **📍 Sèvis**, **ℹ️ Nouvèl** (rapò 15-80km, menm mekanis lekti), ak **☰ Meni**
+  (Pwofil sekirite, Lye mw yo, Group, Envite zanmiw, Blog, Sijesyon [ak backend
+  fonksyonèl], Gid Kominotè, ak Reglaj — Kont, Reglaj Alèt, Vizyalizasyon Map, Nouvèl,
+  Aparans, Tèm ak Kondisyon, Politik Konfidansyalite, Fèmen Sesyon). Kèk atik Meni yo
+  (Pwofil sekirite, Lye mw yo, Group, Blog, Vizyalizasyon Map, Aparans) se plasholdè
+  klè pou kounye a — estrikti a la, kontni konplè a ap vini pita.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

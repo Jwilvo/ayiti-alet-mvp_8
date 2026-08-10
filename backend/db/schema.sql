@@ -162,3 +162,12 @@ CREATE TABLE IF NOT EXISTS fcm_tokens (
 );
 
 CREATE INDEX IF NOT EXISTS fcm_tokens_user_id_idx ON fcm_tokens (user_id);
+
+-- Sijesyon/remak itilizatè yo voye atravè meni "Sijesyon" la — pèmèt ekip la
+-- kolekte remak reyèl san bezwen yon sistèm apa.
+CREATE TABLE IF NOT EXISTS sijesyon (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid REFERENCES users(id),
+  kò         text NOT NULL,
+  kreye_nan  timestamptz NOT NULL DEFAULT now()
+);

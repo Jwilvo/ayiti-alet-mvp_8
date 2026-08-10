@@ -11,6 +11,7 @@ import sosRoutes from "./routes/sos";
 import uploadRoutes, { UPLOAD_DIR } from "./routes/uploads";
 import zoneRoutes from "./routes/zones";
 import notificationRoutes from "./routes/notifications";
+import sijesyonRoutes from "./routes/sijesyon";
 
 async function main() {
   const app = express();
@@ -64,6 +65,7 @@ async function main() {
   app.use("/uploads", express.static(UPLOAD_DIR));
   app.use("/zones", zoneRoutes);
   app.use("/notifications", notificationRoutes);
+  app.use("/sijesyon", sijesyonRoutes);
 
   app.use((_req, res) => res.status(404).json({ erè: "Wout la pa egziste." }));
 

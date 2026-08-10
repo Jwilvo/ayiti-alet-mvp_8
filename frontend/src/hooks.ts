@@ -2,6 +2,13 @@ import { useEffect, useState } from "react";
 import { api } from "./api";
 import { PendingReport, subscribeQueue } from "./offline";
 import { ActiveSos, subscribeSos } from "./sos";
+import { abòneChanjman } from "./unread";
+
+export function useVèsyonMakè(): number {
+  const [v, setV] = useState(0);
+  useEffect(() => abòneChanjman(() => setV((x) => x + 1)), []);
+  return v;
+}
 
 export function useOnlineStatus(): boolean {
   const [online, setOnline] = useState(navigator.onLine);

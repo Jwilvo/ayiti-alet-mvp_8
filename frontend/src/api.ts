@@ -124,6 +124,8 @@ export const api = {
   ajouteKòmantè: (id: string, kò: string) =>
     request<Comment>(`/reports/${id}/komante`, { method: "POST", body: JSON.stringify({ kò }) }),
 
+  voyeSijesyon: (kò: string) => request<{ ok: true }>("/sijesyon", { method: "POST", body: JSON.stringify({ kò }) }),
+
   listPlaces: (params: { kategori?: string; komin?: string; q?: string } = {}) => {
     const qs = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v))).toString();
     return request<Place[]>(`/places${qs ? `?${qs}` : ""}`);

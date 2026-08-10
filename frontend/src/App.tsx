@@ -5,9 +5,26 @@ import CreateReport from "./pages/CreateReport";
 import MapScreen from "./pages/MapScreen";
 import ReportDetail from "./pages/ReportDetail";
 import Places from "./pages/Places";
-import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import SosTracking from "./pages/SosTracking";
+import Alèt from "./pages/Alèt";
+import Nouvèl from "./pages/Nouvèl";
+import Meni from "./pages/Meni";
+import Reglaj from "./pages/meni/Reglaj";
+import Kont from "./pages/meni/Kont";
+import ReglajAlèt from "./pages/meni/ReglajAlèt";
+import VizyalizasyonMap from "./pages/meni/VizyalizasyonMap";
+import NouvèlReglaj from "./pages/meni/NouvèlReglaj";
+import Aparans from "./pages/meni/Aparans";
+import Tèm from "./pages/meni/Tèm";
+import Politik from "./pages/meni/Politik";
+import PwofilSekirite from "./pages/meni/PwofilSekirite";
+import LyeMwYo from "./pages/meni/LyeMwYo";
+import Group from "./pages/meni/Group";
+import EnviteZanmiw from "./pages/meni/EnviteZanmiw";
+import Blog from "./pages/meni/Blog";
+import Sijesyon from "./pages/meni/Sijesyon";
+import GidKominotè from "./pages/meni/GidKominotè";
 import PushToast from "./components/PushToast";
 import { initNotifikasyonPush, koutePushPlanDevan } from "./push";
 
@@ -31,7 +48,24 @@ export default function App() {
         <Route path="/kat" element={<MapScreen />} />
         <Route path="/rapò/:id" element={<ReportDetail />} />
         <Route path="/sèvis" element={<Places />} />
-        <Route path="/pwofil" element={<Profile />} />
+        <Route path="/alèt" element={<Alèt />} />
+        <Route path="/nouvèl" element={<Nouvèl />} />
+        <Route path="/meni" element={<Meni />} />
+        <Route path="/meni/reglaj" element={<Reglaj />} />
+        <Route path="/meni/reglaj/kont" element={<Kont />} />
+        <Route path="/meni/reglaj/alèt" element={<ReglajAlèt />} />
+        <Route path="/meni/reglaj/kat" element={<VizyalizasyonMap />} />
+        <Route path="/meni/reglaj/nouvèl" element={<NouvèlReglaj />} />
+        <Route path="/meni/reglaj/aparans" element={<Aparans />} />
+        <Route path="/meni/reglaj/tèm" element={<Tèm />} />
+        <Route path="/meni/reglaj/politik" element={<Politik />} />
+        <Route path="/meni/pwofil-sekirite" element={<PwofilSekirite />} />
+        <Route path="/meni/lye-mw-yo" element={<LyeMwYo />} />
+        <Route path="/meni/group" element={<Group />} />
+        <Route path="/meni/envite" element={<EnviteZanmiw />} />
+        <Route path="/meni/blog" element={<Blog />} />
+        <Route path="/meni/sijesyon" element={<Sijesyon />} />
+        <Route path="/meni/gid-kominotè" element={<GidKominotè />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/swiv/:id" element={<SosTracking />} />
       </Routes>

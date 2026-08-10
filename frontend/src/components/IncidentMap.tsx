@@ -18,6 +18,7 @@ interface Props {
   markers?: MapMarker[];
   onPickLocation?: (lat: number, lng: number) => void;
   pickedLocation?: { lat: number; lng: number } | null;
+  plenEkran?: boolean;
 }
 
 function ClickCatcher({ onPick }: { onPick: (lat: number, lng: number) => void }) {
@@ -36,9 +37,14 @@ export default function IncidentMap({
   markers = [],
   onPickLocation,
   pickedLocation,
+  plenEkran = false,
 }: Props) {
+  const kadStil = plenEkran
+    ? { height: "100%", width: "100%" }
+    : { height, borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border)", marginBottom: 14 };
+
   return (
-    <div style={{ height, borderRadius: "var(--radius)", overflow: "hidden", border: "1px solid var(--border)", marginBottom: 14 }}>
+    <div style={kadStil}>
       <MapContainer
         center={center}
         zoom={zoom}

@@ -9,7 +9,7 @@ export default function TopBar() {
         <span className="dot" />
         Ayiti Alèt
       </div>
-      <Link to="/pwofil" style={{ fontSize: 12.5, color: "var(--text-muted)", textDecoration: "none" }}>
+      <Link to="/meni/reglaj/kont" style={{ fontSize: 12.5, color: "var(--text-muted)", textDecoration: "none" }}>
         {user ? user.nom.split(" ")[0] : "Konekte"}
       </Link>
     </div>
