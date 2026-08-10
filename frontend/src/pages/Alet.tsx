@@ -4,19 +4,26 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import { useRapòPaNivo } from "../alertFeed";
 import { dejaLi, markeLi } from "../unread";
+import { useVèsyonMakè } from "../hooks";
 import { categoryMeta, timeAgo } from "../categories";
 
-export default function Alèt() {
+export default function Alet() {
   const { lis, chaje } = useRapòPaNivo("ijans");
-  const [endèks, setEndèks] = useState(0);
+  const [lòd, setLòd] = useState<"nouvo" | "ansyen">("nouvo");
   const navigate = useNavigate();
+  useVèsyonMakè();
 
-  const pokoLi = lis.filter((r) => !dejaLi(r.rapò.id));
-  const aktyèl = pokoLi[endèks];
+  const lisKlase = [...lis].sort((a, b) => {
+    const tA = new Date(a.rapò.kreyeNan).getTime();
+    const tB = new Date(b.rapò.kreyeNan).getTime();
+    return lòd === "nouvo" ? tB - tA : tA - tB;
+  });
 
-  function swivan() {
-    if (aktyèl) markeLi(aktyèl.rapò.id);
-    setEndèks((i) => i + 1);
+  const konteAPokoLi = lis.filter((r) => !dejaLi(r.rapò.id)).length;
+
+  function louvri(id: string) {
+    markeLi(id);
+    navigate(`/rapò/${id}`);
   }
 
   if (!chaje) {
@@ -29,73 +36,78 @@ export default function Alèt() {
     );
   }
 
-  if (lis.length === 0) {
-    return (
-      <>
-        <TopBar />
-        <div className="screen">
-          <h1 style={{ fontSize: 20 }}>🔔 Alèt (toupre w)</h1>
-          <p className="empty">Pa gen okenn alèt nan zòn ou kounye a. Sa bon sinyal!</p>
-        </div>
-        <NavBar />
-      </>
-    );
-  }
-
-  if (!aktyèl) {
-    return (
-      <>
-        <TopBar />
-        <div className="screen">
-          <h1 style={{ fontSize: 20 }}>🔔 Alèt (toupre w)</h1>
-          <div className="banner banner-ok">
-            <strong>Ou li tout alèt yo ✔</strong>
-            <p style={{ margin: "6px 0 0", fontSize: 13 }}>{lis.length} alèt total nan zòn ou.</p>
-          </div>
-          <button className="btn btn-ghost btn-block" onClick={() => setEndèks(0)}>
-            Rekòmanse gade yo
-          </button>
-        </div>
-        <NavBar />
-      </>
-    );
-  }
-
-  const meta = categoryMeta(aktyèl.rapò.kategori);
-
   return (
     <>
       <TopBar />
       <div className="screen">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <h1 style={{ fontSize: 20, margin: 0 }}>🔔 Alèt (toupre w)</h1>
-          <span className="tag tag-grav">{pokoLi.length} poko li</span>
+          {konteAPokoLi > 0 && <span className="tag tag-grav">{konteAPokoLi} nouvo</span>}
         </div>
         <p style={{ color: "var(--text-muted)", fontSize: 13, marginTop: 0 }}>
-          {endèks + 1} sou {pokoLi.length}
+          {lis.length} alèt nan yon reyon 15km de ou.
         </p>
 
-        <div className="card" style={{ padding: 18 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-            <div className="report-icon" style={{ fontSize: 26, width: 52, height: 52 }}>{meta.emoji}</div>
-            <span className={`tag tag-${aktyèl.rapò.niveauIjans}`}>{aktyèl.rapò.niveauIjans}</span>
-          </div>
-          <h2 style={{ fontSize: 18, marginTop: 12 }}>{aktyèl.rapò.tit}</h2>
-          <div className="report-meta" style={{ marginBottom: 10 }}>
-            {meta.label} · {aktyèl.rapò.adrès || "Kote pa presize"} · {timeAgo(aktyèl.rapò.kreyeNan)}
-            {aktyèl.distKm !== null && ` · ${aktyèl.distKm.toFixed(1)} km de ou`}
-          </div>
-          <p style={{ fontSize: 14, lineHeight: 1.5 }}>{aktyèl.rapò.deskripsyon}</p>
+        <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+          <button
+            className="btn btn-ghost"
+            style={{
+              flex: 1, padding: "8px 10px", fontSize: 12.5,
+              borderColor: lòd === "nouvo" ? "var(--official)" : "var(--border)",
+              color: lòd === "nouvo" ? "var(--text)" : "var(--text-muted)",
+            }}
+            onClick={() => setLòd("nouvo")}
+          >
+            ↓ Pi nouvo an premye
+          </button>
+          <button
+            className="btn btn-ghost"
+            style={{
+              flex: 1, padding: "8px 10px", fontSize: 12.5,
+              borderColor: lòd === "ansyen" ? "var(--official)" : "var(--border)",
+              color: lòd === "ansyen" ? "var(--text)" : "var(--text-muted)",
+            }}
+            onClick={() => setLòd("ansyen")}
+          >
+            ↑ Pi ansyen an premye
+          </button>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => navigate(`/rapò/${aktyèl.rapò.id}`)}>
-            Wè detay
-          </button>
-          <button className="btn btn-primary" style={{ flex: 1 }} onClick={swivan}>
-            {endèks + 1 >= pokoLi.length ? "Fini ✔" : "Swivan →"}
-          </button>
-        </div>
+        {lis.length === 0 && <p className="empty">Pa gen okenn alèt nan zòn ou kounye a. Sa bon sinyal!</p>}
+
+        {lisKlase.map(({ rapò, distKm }) => {
+          const meta = categoryMeta(rapò.kategori);
+          const li = dejaLi(rapò.id);
+          return (
+            <div
+              key={rapò.id}
+              className="card report-row"
+              style={{ cursor: "pointer", opacity: li ? 0.72 : 1, borderColor: li ? "var(--border)" : "var(--urgent)" }}
+              onClick={() => louvri(rapò.id)}
+            >
+              {!li && (
+                <span
+                  style={{
+                    width: 8, height: 8, borderRadius: "50%", background: "var(--urgent)",
+                    flexShrink: 0, marginTop: 6,
+                  }}
+                />
+              )}
+              <div className="report-icon">{meta.emoji}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                  <strong style={{ fontSize: 14 }}>{rapò.tit}</strong>
+                  <span className={`tag tag-${rapò.niveauIjans}`}>{rapò.niveauIjans}</span>
+                </div>
+                <div className="report-meta">
+                  {meta.label} · {timeAgo(rapò.kreyeNan)}
+                  {distKm !== null && ` · ${distKm.toFixed(1)} km`}
+                  {li && " · li deja"}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
       <NavBar />
     </>

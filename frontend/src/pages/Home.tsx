@@ -5,7 +5,7 @@ import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import { api, Report } from "../api";
 import { useActiveSos, useUserPosition } from "../hooks";
-import { deklancheSos, fèmenSos, lyenSwiv, mesajSmsSos } from "../sos";
+import { deklancheSos, fèmenSos, lyenSwiv, mesajSmsTouKontak, mesajWhatsAppSos } from "../sos";
 import { categoryMeta, severityColor, distansKm, nivoPètinans } from "../categories";
 
 const PÒTOPRENS_CENTER: [number, number] = [18.5392, -72.3364];
@@ -85,14 +85,23 @@ export default function Home() {
               Pozisyon w ap pataje an tan reyèl.
             </p>
             {activeSos.kontakIjans.length > 0 && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-                {activeSos.kontakIjans.map((k) => (
-                  <a key={k.telefon} href={mesajSmsSos(k, activeSos.id)} className="btn btn-ghost" style={{ padding: "6px 10px", fontSize: 11.5 }}>
-                    📩 {k.non}
-                  </a>
-                ))}
-              </div>
+              <a
+                href={mesajSmsTouKontak(activeSos.kontakIjans, activeSos.id)}
+                className="btn btn-urgent btn-block"
+                style={{ padding: "9px 10px", fontSize: 12.5, marginBottom: 8 }}
+              >
+                📩 Voye alèt bay tout kontak yo ({activeSos.kontakIjans.length})
+              </a>
             )}
+            <a
+              href={mesajWhatsAppSos(activeSos.id)}
+              target="_blank"
+              rel="noreferrer"
+              className="btn btn-ghost btn-block"
+              style={{ padding: "8px 10px", fontSize: 12, marginBottom: 8 }}
+            >
+              💬 Voye sou WhatsApp
+            </a>
             <div style={{ display: "flex", gap: 6 }}>
               <a href={lyenSwiv(activeSos.id)} target="_blank" rel="noreferrer" className="btn btn-ghost" style={{ flex: 1, padding: "7px 8px", fontSize: 11.5 }}>
                 🔗 Lyen swiv
@@ -104,21 +113,24 @@ export default function Home() {
           </div>
         )}
 
-        <button
-          className="map-flotan-sos"
-          onClick={handleSos}
-          disabled={sosChaje || !!activeSos}
-          title="Bouton SOS"
-        >
-          {sosChaje ? <span className="spinner" /> : activeSos ? "AKTIF" : sosArmed ? "SÈ?" : "SOS"}
-        </button>
+        <div className="map-flotan-sos-wrap">
+          <button
+            className="map-flotan-sos"
+            onClick={handleSos}
+            disabled={sosChaje || !!activeSos}
+            title="Bouton SOS"
+          >
+            {sosChaje ? <span className="spinner" /> : activeSos ? "AKTIF" : sosArmed ? "SÈ?" : "SOS"}
+          </button>
+        </div>
 
         <button
           className="map-flotan-rapòte"
           onClick={() => navigate("/rapòte")}
           title="Fè yon rapò"
         >
-          📢
+          <span style={{ fontSize: 18 }}>📢</span>
+          Fè yon rapò
         </button>
       </div>
       <NavBar />

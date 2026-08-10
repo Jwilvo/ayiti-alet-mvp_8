@@ -95,6 +95,20 @@ npm run dev          # http://localhost:5173
   Aparans, Tèm ak Kondisyon, Politik Konfidansyalite, Fèmen Sesyon). Kèk atik Meni yo
   (Pwofil sekirite, Lye mw yo, Group, Blog, Vizyalizasyon Map, Aparans) se plasholdè
   klè pou kounye a — estrikti a la, kontni konplè a ap vini pita.
+- ✅ **Amelyorasyon SOS**: bouton SOS flotan an gen animasyon "ond" (pulsasyon) ankò,
+  menm apre nou te fè l pi piti/flotan sou kat la. Deklanchman SOS voye **notifikasyon
+  push otomatik** bay tout itilizatè aplikasyon ki nan 15km (menm jan ak rapò nòmal yo).
+  Yon sèl klik voye SMS bay **tout** kontak ijans yo ansanm (olye youn pa youn), plis yon
+  opsyon **WhatsApp** pou plis vizibilite/enpòtans lè mesaj la rive.
+- ✅ **Bouton "Fè yon rapò"** kounye a se yon ba orizontal ble ak tèks vizib, olye yon ti
+  wonn ak sèlman yon ikòn.
+- ✅ **Alèt/Nouvèl vin yon lis konplè** (olye lekti kat pa kat): tout rapò yo parèt nan yon
+  lis, ak yon **bouton triyaj** (pi nouvo an premye / pi ansyen an premye), ak yon **ti
+  pwen koulè** ki make rapò ki poko li yo. Klike sou nenpòt rapò louvri detay li e make l
+  "li".
+- ✅ **Kat la ak koulè pi sonm/mwens ankonbre**: chanje tuil OpenStreetMap estanda yo
+  (ki gen anpil koulè) pou vèsyon "Dark Matter" CARTO a, ki matche pi byen ak tèm nwa
+  aplikasyon an, san bezwen okenn kle API.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

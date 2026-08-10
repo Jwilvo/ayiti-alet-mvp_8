@@ -3,6 +3,9 @@ import { z } from "zod";
 import crypto from "crypto";
 import { pool } from "../pg";
 import { AuthedRequest, optionalAuth, requireAuth } from "../middleware/auth";
+import { voyeNotifikasyon } from "../firebase";
+
+const RAYON_SOS_MÈT = 15000; // menm sèy 15km ak rapò yo
 
 const router = Router();
 
@@ -47,6 +50,11 @@ router.post("/trigger", optionalAuth, async (req: AuthedRequest, res, next) => {
     }
 
     res.status(201).json({ ...sos, tokèn, kontakIjans });
+
+    // Fire-and-forget: SOS se pi gwo ijans ki genyen — avize tout moun ki
+    // toupre a (menm si yo pa gen okenn kontak ki mete kòm "kontak ijans"),
+    // menm mekanis ak nouvo rapò yo.
+    avizeItilizatèToupreSos(latitude, longitude).catch((e) => console.error("Erè notifikasyon push SOS:", e));
   } catch (e) {
     await client.query("ROLLBACK");
     next(e);
@@ -159,3 +167,25 @@ router.put("/mwen/kontak-ijans", requireAuth, async (req: AuthedRequest, res, ne
 });
 
 export default router;
+
+async function avizeItilizatèToupreSos(lat: number, lng: number) {
+  const { rows } = await pool.query(
+    `SELECT ft.tokèn
+     FROM users u
+     JOIN fcm_tokens ft ON ft.user_id = u.id
+     WHERE u.dènye_pozisyon IS NOT NULL
+       AND ST_DWithin(u.dènye_pozisyon, ST_SetSRID(ST_MakePoint($1, $2), 4326)::geography, $3)`,
+    [lng, lat, RAYON_SOS_MÈT]
+  );
+  const tokèns: string[] = rows.map((r) => r.tokèn);
+  if (tokèns.length === 0) return;
+
+  const tokènMouri = await voyeNotifikasyon(tokèns, {
+    tit: "🚨 SOS Toupre W",
+    kò: "Yon moun deklanche yon SOS tou pre ou — ouvri app la pou wè si ou ka ede.",
+  });
+
+  if (tokènMouri.length > 0) {
+    await pool.query(`DELETE FROM fcm_tokens WHERE tokèn = ANY($1)`, [tokènMouri]);
+  }
+}

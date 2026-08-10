@@ -57,11 +57,34 @@ a { color: inherit; }
   overflow: hidden;
 }
 
-.map-flotan-sos {
+.map-flotan-sos-wrap {
   position: absolute;
-  bottom: 18px;
-  left: 16px;
+  bottom: 14px;
+  left: 14px;
   z-index: 500;
+  width: 76px;
+  height: 76px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-flotan-sos-wrap::before, .map-flotan-sos-wrap::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--urgent);
+  opacity: 0.55;
+  animation: pulse 2.4s ease-out infinite;
+}
+.map-flotan-sos-wrap::after { animation-delay: 1.2s; }
+@media (prefers-reduced-motion: reduce) {
+  .map-flotan-sos-wrap::before, .map-flotan-sos-wrap::after { animation: none; display: none; }
+}
+
+.map-flotan-sos {
+  position: relative;
+  z-index: 1;
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -76,19 +99,20 @@ a { color: inherit; }
 
 .map-flotan-rapòte {
   position: absolute;
-  bottom: 18px;
+  bottom: 20px;
   right: 16px;
   z-index: 500;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
+  height: 46px;
+  padding: 0 18px 0 14px;
+  border-radius: 23px;
   background: var(--official);
   border: none;
   color: white;
-  font-size: 26px;
+  font-size: 13.5px;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   box-shadow: 0 6px 18px rgba(91, 127, 214, 0.5);
   cursor: pointer;
 }

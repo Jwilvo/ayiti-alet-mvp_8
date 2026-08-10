@@ -93,9 +93,23 @@ export function lyenSwiv(sosId: string) {
   return `${window.location.origin}/swiv/${sosId}`;
 }
 
+function mesajSosTèks(sosId: string): string {
+  return `🚨 Ayiti Alèt — Mwen deklanche yon SOS, mwen bezwen èd. Swiv pozisyon m an tan reyèl: ${lyenSwiv(sosId)}`;
+}
+
 export function mesajSmsSos(kontak: KontakIjans, sosId: string) {
-  const tèks = encodeURIComponent(
-    `Ayiti Alèt — Mwen deklanche yon SOS, mwen bezwen èd. Swiv pozisyon m an tan reyèl: ${lyenSwiv(sosId)}`
-  );
-  return `sms:${kontak.telefon}?body=${tèks}`;
+  return `sms:${kontak.telefon}?body=${encodeURIComponent(mesajSosTèks(sosId))}`;
+}
+
+// Yon sèl lyen ki ouvri YON sèl mesaj adrese bay TOUT kontak yo ansanm — yon
+// sèl tap voye alèt la bay tout moun, olye yon aksyon separe pou chak kontak.
+export function mesajSmsTouKontak(kontakYo: KontakIjans[], sosId: string) {
+  const nimewo = kontakYo.map((k) => k.telefon).join(",");
+  return `sms:${nimewo}?body=${encodeURIComponent(mesajSosTèks(sosId))}`;
+}
+
+// Louvri WhatsApp ak mesaj la deja ekri — moun nan chwazi kontak/gwoup la
+// dirèkteman nan WhatsApp (yon sèl tap pou louvri, yon dezyèm pou voye).
+export function mesajWhatsAppSos(sosId: string) {
+  return `https://wa.me/?text=${encodeURIComponent(mesajSosTèks(sosId))}`;
 }
