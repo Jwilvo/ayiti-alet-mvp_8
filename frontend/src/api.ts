@@ -5,6 +5,7 @@ export function mediaUrl(url: string) {
 }
 
 export interface ReportMedia { id?: string; tip: string; url: string; koulèDominant?: string; briyans?: number; flou?: boolean; }
+export interface Comment { id: string; nonAfiche: string; kò: string; kreyeNan: string; }
 export interface Report {
   id: string;
   userId: string | null;
@@ -22,6 +23,7 @@ export interface Report {
   media?: ReportMedia[];
   konfimasyon?: number;
   confirmations?: unknown[];
+  kòmantè?: Comment[];
 }
 export interface Place {
   id: string;
@@ -118,6 +120,9 @@ export const api = {
 
   confirmReport: (id: string, tipAksyon: "konfime" | "siyale") =>
     request(`/reports/${id}/confirm`, { method: "POST", body: JSON.stringify({ tipAksyon }) }),
+
+  ajouteKòmantè: (id: string, kò: string) =>
+    request<Comment>(`/reports/${id}/komante`, { method: "POST", body: JSON.stringify({ kò }) }),
 
   listPlaces: (params: { kategori?: string; komin?: string; q?: string } = {}) => {
     const qs = new URLSearchParams(Object.fromEntries(Object.entries(params).filter(([, v]) => v))).toString();

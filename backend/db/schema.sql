@@ -66,6 +66,21 @@ CREATE TABLE IF NOT EXISTS report_confirmations (
   UNIQUE (report_id, user_id, tip_aksyon)
 );
 
+-- Kòmantè piblik sou yon rapò (fonksyon "Collaboration" — moun ka ekri yon ti
+-- mesaj pou konplete/mete ajou enfòmasyon sou yon ensidan, tankou "Ponpye
+-- rive" oswa "Wout la debloke kounye a"). Rapò anonim ka gen kòmantè anonim
+-- tou, konsistan ak rès aplikasyon an.
+CREATE TABLE IF NOT EXISTS report_kòmantè (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  report_id   uuid NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+  user_id     uuid REFERENCES users(id),
+  non_afiche  text NOT NULL,
+  kò          text NOT NULL,
+  kreye_nan   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS report_kòmantè_report_id_idx ON report_kòmantè (report_id);
+
 CREATE TABLE IF NOT EXISTS places (
   id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   non            text NOT NULL,

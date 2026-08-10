@@ -77,6 +77,15 @@ npm run dev          # http://localhost:5173
   jere tou de mòd offline (Workbox) AK notifikasyon background (Firebase), pou evite konfli
   ant 2 service worker. San `FIREBASE_SERVICE_ACCOUNT` (backend) ak varyab `VITE_FIREBASE_*`
   (frontend) konfigire, fonksyon sa a dezaktive an silans san l pa kraze rès aplikasyon an.
+- ✅ **Kòmantè piblik sou rapò yo** (enspire pa SOSAFE "Collaboration"): moun ka ekri yon ti
+  mesaj pou konplete/mete ajou yon rapò ("Ponpye rive", "Wout la debloke"), anonim oswa
+  ak non yo. Fil kòmantè yo parèt sou Detay Rapò.
+- ✅ **Estati vizib pou tout sitwayen** (enspire pa "Report Feed — kijan istwa a fini"):
+  chak rapò kounye a montre klèman si li "🆕 Nouvo", "✔ Otorite konfime", "✅ Rezolu", oswa
+  "✕ Rejte apre revizyon" — pa sèlman admin yo ki wè sa ankò.
+- ✅ **Avize kontak ijans lè yon rapò grav** (enspire pa "Private Groups"): apre yon
+  itilizatè konekte fè yon rapò nivo "grav", aplikasyon an pwopoze voye yon SMS ak lyen
+  rapò a bay kontak ijans li yo (reyitilize menm sistèm SOS la deja genyen).
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

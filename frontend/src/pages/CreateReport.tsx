@@ -4,7 +4,7 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import ConnectivityBanner from "../components/ConnectivityBanner";
-import { api } from "../api";
+import { api, getSessionUser, KontakIjans } from "../api";
 import { queueReport } from "../offline";
 import { CATEGORIES } from "../categories";
 
@@ -27,7 +27,8 @@ export default function CreateReport() {
   const [anonim, setAnonim] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erè, setErè] = useState("");
-  const [siksè, setSiksè] = useState<{ otoriteAvize: string[]; avètisman?: string[] } | null>(null);
+  const [siksè, setSiksè] = useState<{ otoriteAvize: string[]; avètisman?: string[]; reportId?: string } | null>(null);
+  const [kontakPouAvize, setKontakPouAvize] = useState<KontakIjans[]>([]);
   const [chajeAnLokal, setChajeAnLokal] = useState(false);
   const [lokalizasyon, setLokalizasyon] = useState<{ lat: number; lng: number } | null>(null);
   const [chajePozisyon, setChajePozisyon] = useState(false);
@@ -112,7 +113,20 @@ export default function CreateReport() {
 
     try {
       const res = await api.createReport(kòReport);
-      setSiksè({ otoriteAvize: res.otoriteAvize, avètisman: res.avètisman });
+      setSiksè({ otoriteAvize: res.otoriteAvize, avètisman: res.avètisman, reportId: res.report.id });
+
+      // Si rapò a grav e moun nan konekte, pwopoze l voye lyen an bay kontak
+      // ijans li yo (menm lide ak "Private Groups" — men san bezwen kreye
+      // yon gwoup, nou reyitilize kontak ijans SOS yo deja genyen).
+      const user = getSessionUser();
+      if (user && niveauIjans === "grav") {
+        try {
+          const kontak = await api.getKontakIjans();
+          setKontakPouAvize(kontak);
+        } catch {
+          // pa gwo zafè si sa echwe — se yon fonksyon bonus, pa esansyèl
+        }
+      }
     } catch (e: any) {
       queueReport(kòReport);
       setChajeAnLokal(true);
@@ -155,6 +169,29 @@ export default function CreateReport() {
             </div>
           )}
 
+          {kontakPouAvize.length > 0 && siksè.reportId && (
+            <div className="banner" style={{ background: "var(--surface-raised)", borderColor: "var(--border)" }}>
+              <strong>📩 Avize kontak ijans ou yo?</strong>
+              <p style={{ fontSize: 13, margin: "6px 0 10px", color: "var(--text-muted)" }}>
+                Sa a se yon rapò grav — ou ka voye yo lyen an pou yo konnen sa k ap pase.
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {kontakPouAvize.map((k) => (
+                  <a
+                    key={k.telefon}
+                    href={`sms:${k.telefon}?body=${encodeURIComponent(
+                      `Ayiti Alèt — Gen yon ijans nan zòn mwen: ${window.location.origin}/rapò/${siksè.reportId}`
+                    )}`}
+                    className="btn btn-ghost"
+                    style={{ padding: "7px 12px", fontSize: 12.5 }}
+                  >
+                    Voye bay {k.non}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
           <button className="btn btn-primary btn-block" onClick={() => navigate("/")}>
             Retounen nan Akèy
           </button>
@@ -163,6 +200,7 @@ export default function CreateReport() {
             style={{ marginTop: 10 }}
             onClick={() => {
               setSiksè(null);
+              setKontakPouAvize([]);
               setChajeAnLokal(false);
               setKategori("");
               setTit("");

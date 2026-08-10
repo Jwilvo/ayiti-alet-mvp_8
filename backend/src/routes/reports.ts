@@ -224,8 +224,44 @@ router.get("/:id", async (req, res, next) => {
        FROM report_confirmations WHERE report_id = $1`,
       [req.params.id]
     );
+    const kòmantè = await pool.query(
+      `SELECT id, non_afiche AS "nonAfiche", kò, kreye_nan AS "kreyeNan"
+       FROM report_kòmantè WHERE report_id = $1 ORDER BY kreye_nan ASC`,
+      [req.params.id]
+    );
 
-    res.json({ ...rows[0], media: media.rows, confirmations: confirmations.rows });
+    res.json({ ...rows[0], media: media.rows, confirmations: confirmations.rows, kòmantè: kòmantè.rows });
+  } catch (e) {
+    next(e);
+  }
+});
+
+const kòmantèSchema = z.object({ kò: z.string().min(1).max(500) });
+
+// Kòmantè piblik sou yon rapò — moun konekte oswa anonim ka ekri (menm
+// filozofi ak rapò yo). Non ki afiche a se non itilizatè a si li konekte,
+// oswa "Anonim" si li pa konekte.
+router.post("/:id/komante", optionalAuth, async (req: AuthedRequest, res, next) => {
+  const parsed = kòmantèSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ erè: "Kòmantè a pa ka vid, e li limite a 500 karaktè." });
+
+  try {
+    const report = await pool.query("SELECT id FROM reports WHERE id = $1", [req.params.id]);
+    if (!report.rows[0]) return res.status(404).json({ erè: "Rapò a pa egziste." });
+
+    let nonAfiche = "Anonim";
+    if (req.userId) {
+      const { rows: userRows } = await pool.query("SELECT nom FROM users WHERE id = $1", [req.userId]);
+      if (userRows[0]) nonAfiche = userRows[0].nom.split(" ")[0];
+    }
+
+    const { rows } = await pool.query(
+      `INSERT INTO report_kòmantè (report_id, user_id, non_afiche, kò)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, non_afiche AS "nonAfiche", kò, kreye_nan AS "kreyeNan"`,
+      [req.params.id, req.userId ?? null, nonAfiche, parsed.data.kò.trim()]
+    );
+    res.status(201).json(rows[0]);
   } catch (e) {
     next(e);
   }

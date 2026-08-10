@@ -6,11 +6,26 @@ import IncidentMap from "../components/IncidentMap";
 import { api, Report, mediaUrl } from "../api";
 import { categoryMeta, severityColor, timeAgo } from "../categories";
 
+function estatiInfo(statut: string): { label: string; koulè: string; fon: string } {
+  switch (statut) {
+    case "verifye":
+      return { label: "✔ Otorite konfime", koulè: "var(--calm)", fon: "var(--calm-dim)" };
+    case "rezolu":
+      return { label: "✅ Rezolu", koulè: "var(--calm)", fon: "var(--calm-dim)" };
+    case "rejte":
+      return { label: "✕ Rejte apre revizyon", koulè: "var(--text-muted)", fon: "var(--surface-raised)" };
+    default:
+      return { label: "🆕 Nouvo — poko verifye", koulè: "var(--amber)", fon: "var(--amber-dim)" };
+  }
+}
+
 export default function ReportDetail() {
   const { id } = useParams();
   const [report, setReport] = useState<Report | null>(null);
   const [erè, setErè] = useState("");
   const [aksyonMsg, setAksyonMsg] = useState("");
+  const [nouvoKòmantè, setNouvoKòmantè] = useState("");
+  const [voyeAnKou, setVoyeAnKou] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -24,6 +39,21 @@ export default function ReportDetail() {
       setAksyonMsg(tip === "konfime" ? "Mèsi — ou konfime rapò sa a." : "Mèsi — nou siyale enfòmasyon an pou revizyon.");
     } catch (e: any) {
       setErè(e.message.includes("konekte") ? "Ou dwe konekte anvan pou konfime yon rapò." : e.message);
+    }
+  }
+
+  async function voyeKòmantè(e: React.FormEvent) {
+    e.preventDefault();
+    if (!id || !nouvoKòmantè.trim()) return;
+    setVoyeAnKou(true);
+    try {
+      const kòm = await api.ajouteKòmantè(id, nouvoKòmantè.trim());
+      setReport((r) => (r ? { ...r, kòmantè: [...(r.kòmantè ?? []), kòm] } : r));
+      setNouvoKòmantè("");
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setVoyeAnKou(false);
     }
   }
 
@@ -51,6 +81,7 @@ export default function ReportDetail() {
   }
 
   const meta = categoryMeta(report.kategori);
+  const estati = estatiInfo(report.statut);
 
   return (
     <>
@@ -62,11 +93,19 @@ export default function ReportDetail() {
             <span className={`tag tag-${report.niveauIjans}`}>{report.niveauIjans}</span>
           </div>
           <h1 style={{ fontSize: 19, marginTop: 12 }}>{report.tit}</h1>
-          <div className="report-meta" style={{ marginBottom: 12 }}>
+          <div className="report-meta" style={{ marginBottom: 10 }}>
             {meta.label} · {report.adrès || "Kote pa presize"} · {timeAgo(report.kreyeNan)}
             {report.komin && ` · ${report.komin}`}
             {report.anonim && " · Rapò anonim"}
           </div>
+
+          <span
+            className="tag"
+            style={{ background: estati.fon, color: estati.koulè, fontSize: 11.5, padding: "5px 10px", marginBottom: 10, display: "inline-block" }}
+          >
+            {estati.label}
+          </span>
+
           <p style={{ fontSize: 14.5, lineHeight: 1.5 }}>{report.deskripsyon}</p>
 
           {report.media && report.media.filter((m) => m.tip === "foto").length > 0 && (
@@ -132,8 +171,37 @@ export default function ReportDetail() {
         </div>
 
         <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 14, textAlign: "center" }}>
-          Statut: {report.statut} · Konfimasyon: {report.konfimasyon ?? report.confirmations?.length ?? 0}
+          Konfimasyon: {report.konfimasyon ?? report.confirmations?.length ?? 0}
         </p>
+
+        <div className="section-title"><h2>Kòmantè ({report.kòmantè?.length ?? 0})</h2></div>
+
+        <form onSubmit={voyeKòmantè} style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          <input
+            placeholder="Ekri yon kòmantè pou konplete enfòmasyon an…"
+            value={nouvoKòmantè}
+            onChange={(e) => setNouvoKòmantè(e.target.value)}
+            style={{ flex: 1, marginBottom: 0 }}
+            maxLength={500}
+          />
+          <button className="btn btn-primary" type="submit" disabled={voyeAnKou || !nouvoKòmantè.trim()} style={{ padding: "0 16px" }}>
+            {voyeAnKou ? <span className="spinner" /> : "Voye"}
+          </button>
+        </form>
+
+        {(!report.kòmantè || report.kòmantè.length === 0) && (
+          <p className="empty">Poko gen kòmantè — se ou ki ka premye a.</p>
+        )}
+
+        {report.kòmantè?.map((k) => (
+          <div key={k.id} className="card" style={{ padding: "10px 14px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+              <strong style={{ fontSize: 13 }}>{k.nonAfiche}</strong>
+              <span style={{ fontSize: 11.5, color: "var(--text-muted)" }}>{timeAgo(k.kreyeNan)}</span>
+            </div>
+            <p style={{ fontSize: 13.5, margin: 0, lineHeight: 1.4 }}>{k.kò}</p>
+          </div>
+        ))}
       </div>
       <NavBar />
     </>
