@@ -20,15 +20,15 @@ const modPasSchema = z
   .regex(/[^A-Za-z0-9]/, "Modpas la dwe gen omwen yon karaktè espesyal (egzanp: ! @ # $).");
 
 const registerSchema = z.object({
-  nom: z.string().min(2),
-  telefon: z.string().min(8),
-  email: z.string().email().optional(),
+  nom: z.string().min(2, "Non konplè a dwe gen omwen 2 karaktè."),
+  telefon: z.string().min(8, "Bay yon nimewo telefòn valid."),
+  email: z.string().email("Adrès imèl la pa valid.").optional().or(z.literal("")),
   motDePasse: modPasSchema,
   komin: z.string().optional(),
   katye: z.string().optional(),
   nonKonplè: z.string().min(3, "Bay non konplè, jan li ekri sou dokiman ofisyèl ou.").optional(),
-  dokimanTip: z.enum(["NIF", "CIN", "Paspò"]).optional(),
-  dokimanNimewo: z.string().min(4).optional(),
+  dokimanTip: z.enum(["NIF", "CIN", "Paspò"], { errorMap: () => ({ message: "Chwazi yon tip dokiman valid." }) }).optional(),
+  dokimanNimewo: z.string().min(4, "Nimewo dokiman an dwe gen omwen 4 karaktè.").optional(),
   adrèsKay: z.string().optional(),
 });
 

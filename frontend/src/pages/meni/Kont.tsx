@@ -134,11 +134,10 @@ export default function Kont() {
   const navigate = useNavigate();
   const [user, setUser] = useState(getSessionUser());
   const [mòd, setMòd] = useState<"login" | "register" | "bliye">("login");
-  const [nom, setNom] = useState("");
+  const [nonKonplè, setNonKonplè] = useState("");
   const [telefon, setTelefon] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
-  const [nonKonplè, setNonKonplè] = useState("");
   const [dokimanTip, setDokimanTip] = useState<"" | "NIF" | "CIN" | "Paspò">("");
   const [dokimanNimewo, setDokimanNimewo] = useState("");
   const [adrèsKay, setAdrèsKay] = useState("");
@@ -154,7 +153,7 @@ export default function Kont() {
         mòd === "login"
           ? await api.login({ telefon, motDePasse })
           : await api.register({
-              nom,
+              nom: nonKonplè,
               telefon,
               motDePasse,
               email: email || undefined,
@@ -219,9 +218,6 @@ export default function Kont() {
             <form onSubmit={soumèt}>
               {mòd === "register" && (
                 <>
-                  <label>Non ki afiche (surnom oswa ti non)</label>
-                  <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Egzanp: Jan" />
-
                   <label>Non konplè (jan li ekri sou dokiman ofisyèl)</label>
                   <input value={nonKonplè} onChange={(e) => setNonKonplè(e.target.value)} placeholder="Jan Batis Pyè" />
 
