@@ -138,6 +138,16 @@ npm run dev          # http://localhost:5173
     vizib pou kont ki gen wòl "admin". (Wout `/admin` li menm te toujou mande kont admin
     separe pou konekte — sa a se yon amelyorasyon vizibilite/UX, pa yon nouvo restriksyon
     sekirite backend.)
+  - **Odite konplè**: okenn wout API pa retounen `dokiman_ash`/`dokiman_chifre`/`mot_de_pass`
+    nan repons li — chak `SELECT` nome kolòn li eksplisitman (pa gen `SELECT *`).
+  - **Limit vitès dedye pou enskripsyon** (8/èdtan, pi strik pase login/reyajisman) —
+    anpeche yon atakè "enimere" plizyè nimewo dokiman idantite rapid pou dekouvri ki moun
+    gen yon kont. Teste an dirèk: 9yèm tantativ la rejte.
+  - **CORS limite** ak `FRONTEND_URL` — sèlman domèn ou otorize ka rele API a soti nan
+    yon navigatè. Teste an dirèk ak orijin otorize (aksepte) ak orijin etranje (rejte).
+  - **Chifreman ki refize an silans**: si `ENCRYPTION_KEY` pa konfigire e `NODE_ENV=production`,
+    sèvè a **refize** kreye nenpòt kont ak dokiman idantite (olye chifre l ak yon kle
+    tanporè ki ta pèdi apre yon rekòmansaj) — teste an dirèk, 0 kont pasyèl kreye.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

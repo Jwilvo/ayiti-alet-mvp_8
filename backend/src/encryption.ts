@@ -1,19 +1,30 @@
 import crypto from "crypto";
 
 // Chifreman AES-256-GCM pou nimewo dokiman idantite yo (NIF/CIN/Paspò).
-// Kle a soti nan ENCRYPTION_KEY (32 byte, base64) — si li pa la, nou jenere
-// yon kle tanporè SÈLMAN pou devlopman lokal (redemare sèvè a pèdi kapasite
-// dechifre ansyen valè yo — pou sa, mete yon vrè ENCRYPTION_KEY an pwodiksyon).
+// Kle a soti nan ENCRYPTION_KEY (32 byte, base64).
+//
+// SEKIRITE ENPÒTAN: an pwodiksyon, si ENCRYPTION_KEY pa konfigire (oswa li
+// envalid), nou REFIZE chifre/dechifre olye jenere yon kle tanporè an silans
+// — yon kle tanporè ta vle di done ki chifre jodi a vin ilizib pou tout tan
+// apre pwochen rekòmansaj sèvè a, san avètisman.
 function jwennKle(): Buffer {
   const raw = process.env.ENCRYPTION_KEY;
   if (raw) {
     const buf = Buffer.from(raw, "base64");
     if (buf.length === 32) return buf;
-    console.warn("ENCRYPTION_KEY pa gen bon longè (dwe 32 byte an base64) — jenere yon kle tanporè.");
+    throw new Error("ENCRYPTION_KEY pa gen bon longè — li dwe yon valè 32 byte an base64.");
   }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "ENCRYPTION_KEY pa konfigire an pwodiksyon — nou refize chifre/dechifre done idantite san yon kle valid."
+    );
+  }
+
+  // Sèlman pou devlopman lokal: kle tanporè, ak yon avètisman klè.
   if (!(global as any).__tanporèKle) {
     (global as any).__tanporèKle = crypto.randomBytes(32);
-    console.warn("⚠ ENCRYPTION_KEY pa konfigire — itilize yon kle tanporè (pa pou pwodiksyon).");
+    console.warn("⚠ ENCRYPTION_KEY pa konfigire — itilize yon kle tanporè (SÈLMAN pou devlopman lokal).");
   }
   return (global as any).__tanporèKle;
 }

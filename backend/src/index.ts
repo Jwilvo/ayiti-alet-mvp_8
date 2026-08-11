@@ -19,7 +19,19 @@ async function main() {
   const app = express();
   app.set("trust proxy", 1);
   app.use(helmet({ crossOriginResourcePolicy: false }));
-  app.use(cors());
+  // CORS limite a sèlman domèn frontend ki otorize yo — sa anpeche nenpòt lòt
+  // sit itilize navigatè yon moun konekte pou rele API a alaenswi. Mete plizyè
+  // domèn separe ak virgil nan FRONTEND_URL si w bezwen (egzanp URL tès +
+  // pwodiksyon). San FRONTEND_URL konfigire, nou aksepte tout orijin (pou pa
+  // bloke devlopman lokal), men sa dwe konfigire an pwodiksyon.
+  const orijinOtorize = process.env.FRONTEND_URL?.split(",").map((o) => o.trim());
+  app.use(
+    cors(
+      orijinOtorize
+        ? { origin: orijinOtorize }
+        : {}
+    )
+  );
   app.use(express.json({ limit: "1mb" }));
 
   app.use(
@@ -40,6 +52,18 @@ async function main() {
     message: { erè: "Twòp tantativ koneksyon — tann 15 minit epi eseye ankò." },
   });
 
+  // Limit pi strik sou enskripsyon: paske chan "dokiman deja itilize" la ka
+  // sèvi kòm yon zouti pou yon atakè "teste" (enimere) plizyè nimewo NIF/CIN
+  // youn apre lòt pou dekouvri ki moun gen yon kont Ayiti Alèt. Yon limit pi
+  // ba redwi anpil valè yon atak konsa san l pa jennen vrè itilizatè.
+  const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 8,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { erè: "Twòp tantativ enskripsyon — tann yon èdtan epi eseye ankò." },
+  });
+
   const kreyasyonLimiterBrit = rateLimit({
     windowMs: 10 * 60 * 1000,
     max: 30,
@@ -53,7 +77,7 @@ async function main() {
   app.get("/health", (_req, res) => res.json({ statut: "ok", sèvis: "Ayiti Alèt API" }));
 
   app.use("/auth/login", authLimiter);
-  app.use("/auth/register", authLimiter);
+  app.use("/auth/register", registerLimiter);
   app.use("/auth/mande-reyajisman", authLimiter);
   app.use("/auth/konfime-reyajisman", authLimiter);
   app.use("/reports", kreyasyonLimiter);
