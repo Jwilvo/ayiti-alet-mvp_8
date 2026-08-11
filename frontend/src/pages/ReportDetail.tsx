@@ -4,22 +4,25 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import { api, Report, mediaUrl } from "../api";
-import { categoryMeta, severityColor, timeAgo } from "../categories";
+import { categoryMeta, severityColor, timeAgo, nivoLabel } from "../categories";
+import { t } from "../i18n";
+import { useLangVèsyon } from "../hooks";
 
 function estatiInfo(statut: string): { label: string; koulè: string; fon: string } {
   switch (statut) {
     case "verifye":
-      return { label: "✔ Otorite konfime", koulè: "var(--calm)", fon: "var(--calm-dim)" };
+      return { label: t("detay.estati_verifye"), koulè: "var(--calm)", fon: "var(--calm-dim)" };
     case "rezolu":
-      return { label: "✅ Rezolu", koulè: "var(--calm)", fon: "var(--calm-dim)" };
+      return { label: t("detay.estati_rezolu"), koulè: "var(--calm)", fon: "var(--calm-dim)" };
     case "rejte":
-      return { label: "✕ Rejte apre revizyon", koulè: "var(--text-muted)", fon: "var(--surface-raised)" };
+      return { label: t("detay.estati_rejte"), koulè: "var(--text-muted)", fon: "var(--surface-raised)" };
     default:
-      return { label: "🆕 Nouvo — poko verifye", koulè: "var(--amber)", fon: "var(--amber-dim)" };
+      return { label: t("detay.estati_nouvo"), koulè: "var(--amber)", fon: "var(--amber-dim)" };
   }
 }
 
 export default function ReportDetail() {
+  useLangVèsyon();
   const { id } = useParams();
   const [report, setReport] = useState<Report | null>(null);
   const [erè, setErè] = useState("");
@@ -90,13 +93,13 @@ export default function ReportDetail() {
         <div className="card">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div className="report-icon" style={{ fontSize: 24, width: 48, height: 48 }}>{meta.emoji}</div>
-            <span className={`tag tag-${report.niveauIjans}`}>{report.niveauIjans}</span>
+            <span className={`tag tag-${report.niveauIjans}`}>{nivoLabel(report.niveauIjans)}</span>
           </div>
           <h1 style={{ fontSize: 19, marginTop: 12 }}>{report.tit}</h1>
           <div className="report-meta" style={{ marginBottom: 10 }}>
-            {meta.label} · {report.adrès || "Kote pa presize"} · {timeAgo(report.kreyeNan)}
+            {meta.label} · {report.adrès || t("rapò.kote_pa_presize")} · {timeAgo(report.kreyeNan)}
             {report.komin && ` · ${report.komin}`}
-            {report.anonim && " · Rapò anonim"}
+            {report.anonim && ` · ${t("rapò.rapò_anonim")}`}
           </div>
 
           <span
@@ -163,34 +166,34 @@ export default function ReportDetail() {
 
         <div style={{ display: "flex", gap: 10 }}>
           <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => aji("konfime")}>
-            ✔ Konfime
+            {t("detay.konfime")}
           </button>
           <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => aji("siyale")}>
-            ⚑ Siyale
+            {t("detay.siyale")}
           </button>
         </div>
 
         <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 14, textAlign: "center" }}>
-          Konfimasyon: {report.konfimasyon ?? report.confirmations?.length ?? 0}
+          {t("detay.konfimasyon")}: {report.konfimasyon ?? report.confirmations?.length ?? 0}
         </p>
 
-        <div className="section-title"><h2>Kòmantè ({report.kòmantè?.length ?? 0})</h2></div>
+        <div className="section-title"><h2>{t("detay.kòmantè")} ({report.kòmantè?.length ?? 0})</h2></div>
 
         <form onSubmit={voyeKòmantè} style={{ display: "flex", gap: 8, marginBottom: 14 }}>
           <input
-            placeholder="Ekri yon kòmantè pou konplete enfòmasyon an…"
+            placeholder={t("detay.kòmantè_placeholder")}
             value={nouvoKòmantè}
             onChange={(e) => setNouvoKòmantè(e.target.value)}
             style={{ flex: 1, marginBottom: 0 }}
             maxLength={500}
           />
           <button className="btn btn-primary" type="submit" disabled={voyeAnKou || !nouvoKòmantè.trim()} style={{ padding: "0 16px" }}>
-            {voyeAnKou ? <span className="spinner" /> : "Voye"}
+            {voyeAnKou ? <span className="spinner" /> : t("detay.voye")}
           </button>
         </form>
 
         {(!report.kòmantè || report.kòmantè.length === 0) && (
-          <p className="empty">Poko gen kòmantè — se ou ki ka premye a.</p>
+          <p className="empty">{t("detay.pa_kòmantè")}</p>
         )}
 
         {report.kòmantè?.map((k) => (

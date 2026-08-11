@@ -5,7 +5,7 @@ import NavBar from "../components/NavBar";
 import { useRapòPaNivo } from "../alertFeed";
 import { dejaLi, markeLi } from "../unread";
 import { useVèsyonMakè, useLangVèsyon } from "../hooks";
-import { categoryMeta, timeAgo } from "../categories";
+import { categoryMeta, timeAgo, nivoLabel } from "../categories";
 import { t } from "../i18n";
 
 export default function Nouvel() {
@@ -103,7 +103,7 @@ export default function Nouvel() {
               <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                   <strong style={{ fontSize: 14 }}>{rapò.tit}</strong>
-                  <span className={`tag tag-${rapò.niveauIjans}`}>{rapò.niveauIjans}</span>
+                  <span className={`tag tag-${rapò.niveauIjans}`}>{nivoLabel(rapò.niveauIjans)}</span>
                 </div>
                 <div className="report-meta">
                   {meta.label} · {timeAgo(rapò.kreyeNan)}

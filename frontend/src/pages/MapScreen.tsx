@@ -4,8 +4,9 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import { api, Report } from "../api";
-import { useUserPosition } from "../hooks";
-import { categoryMeta, severityColor, timeAgo, distansKm, nivoPètinans } from "../categories";
+import { useUserPosition, useLangVèsyon } from "../hooks";
+import { categoryMeta, severityColor, timeAgo, distansKm, nivoPètinans, nivoLabel } from "../categories";
+import { t } from "../i18n";
 
 const PÒTOPRENS_CENTER: [number, number] = [18.5392, -72.3364];
 
@@ -17,6 +18,7 @@ const FILTRES = [
 ];
 
 export default function MapScreen() {
+  useLangVèsyon();
   const [reports, setReports] = useState<Report[] | null>(null);
   const [filtre, setFiltre] = useState("");
   const [erè, setErè] = useState("");
@@ -93,10 +95,10 @@ export default function MapScreen() {
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
                     <strong style={{ fontSize: 14 }}>{r.tit}</strong>
-                    <span className={`tag tag-${r.niveauIjans}`}>{r.niveauIjans}</span>
+                    <span className={`tag tag-${r.niveauIjans}`}>{nivoLabel(r.niveauIjans)}</span>
                   </div>
                   <div className="report-meta">
-                    {meta.label} · {r.adrès || "Kote pa presize"} · {timeAgo(r.kreyeNan)}
+                    {meta.label} · {r.adrès || t("rapò.kote_pa_presize")} · {timeAgo(r.kreyeNan)}
                   </div>
                   {pozisyon && (
                     <div style={{ marginTop: 6 }}>

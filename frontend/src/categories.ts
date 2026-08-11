@@ -28,6 +28,10 @@ export function categoryMeta(key: string): CategoryMeta {
   return { ...bazik, label: t(`kat.${key}`) };
 }
 
+export function nivoLabel(niveau: string): string {
+  return t(`nivo.${niveau}`) || niveau;
+}
+
 export function severityColor(niveau: string) {
   if (niveau === "grav") return "var(--urgent)";
   if (niveau === "ba") return "var(--calm)";
@@ -37,12 +41,12 @@ export function severityColor(niveau: string) {
 export function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
   const min = Math.floor(diffMs / 60000);
-  if (min < 1) return "kounye a";
-  if (min < 60) return `${min} min pase`;
+  if (min < 1) return t("tan.kounye_a");
+  if (min < 60) return `${min} ${t("tan.min_pase")}`;
   const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h pase`;
+  if (hr < 24) return `${hr}${t("tan.h_pase")}`;
   const day = Math.floor(hr / 24);
-  return `${day}j pase`;
+  return `${day}${t("tan.j_pase")}`;
 }
 
 // Distans ant 2 pwen GPS an kilomèt (fòmil Haversine) — itilize pou detèmine

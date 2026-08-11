@@ -146,24 +146,23 @@ export default function CreateReport() {
         <div className="screen">
           {chajeAnLokal ? (
             <div className="banner" style={{ background: "var(--amber-dim)", borderColor: "rgba(245,166,35,0.3)", color: "#ffd48a" }}>
-              <strong>Rapò a estoke sou telefòn ou 📴</strong>
+              <strong>{t("rapò.estoke_lokal")}</strong>
               <div style={{ marginTop: 6 }}>
-                Nou pa jwenn koneksyon kounye a. Rapò a ap voye otomatikman bay otorite yo depi
-                entènèt retounen — ou pa bezwen fè anyen ankò.
+                {t("rapò.pa_koneksyon")}
               </div>
             </div>
           ) : (
             <div className="banner banner-ok">
-              <strong>Rapò a voye ✔</strong>
+              <strong>{t("rapò.voye_reyisi")}</strong>
               <div style={{ marginTop: 6 }}>
-                Nou avize otomatikman: <strong>{siksè.otoriteAvize.join(", ")}</strong>. Mèsi paske ou ede kominote a rete an sekirite.
+                {t("rapò.avize_otomatik")} <strong>{siksè.otoriteAvize.join(", ")}</strong>. {t("rapò.mèsi")}
               </div>
             </div>
           )}
 
           {siksè.avètisman && siksè.avètisman.length > 0 && (
             <div className="banner" style={{ background: "var(--amber-dim)", borderColor: "rgba(245,166,35,0.3)", color: "#ffd48a" }}>
-              <strong>🔎 Analiz otomatik foto a</strong>
+              <strong>{t("rapò.analiz_foto")}</strong>
               <ul style={{ margin: "8px 0 0", paddingLeft: 18 }}>
                 {siksè.avètisman.map((a, i) => (
                   <li key={i} style={{ marginBottom: 4, fontSize: 13 }}>{a}</li>
@@ -174,9 +173,9 @@ export default function CreateReport() {
 
           {kontakPouAvize.length > 0 && siksè.reportId && (
             <div className="banner" style={{ background: "var(--surface-raised)", borderColor: "var(--border)" }}>
-              <strong>📩 Avize kontak ijans ou yo?</strong>
+              <strong>{t("rapò.avize_kontak")}</strong>
               <p style={{ fontSize: 13, margin: "6px 0 10px", color: "var(--text-muted)" }}>
-                Sa a se yon rapò grav — ou ka voye yo lyen an pou yo konnen sa k ap pase.
+                {t("rapò.avize_kontak_deskripsyon")}
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {kontakPouAvize.map((k) => (
@@ -188,7 +187,7 @@ export default function CreateReport() {
                     className="btn btn-ghost"
                     style={{ padding: "7px 12px", fontSize: 12.5 }}
                   >
-                    Voye bay {k.non}
+                    {t("rapò.voye_bay")} {k.non}
                   </a>
                 ))}
               </div>
@@ -196,7 +195,7 @@ export default function CreateReport() {
           )}
 
           <button className="btn btn-primary btn-block" onClick={() => navigate("/")}>
-            Retounen nan Akèy
+            {t("rapò.retounen_akèy")}
           </button>
           <button
             className="btn btn-ghost btn-block"
@@ -211,7 +210,7 @@ export default function CreateReport() {
               setAdrès("");
             }}
           >
-            Fè yon lòt rapò
+            {t("rapò.fè_lòt")}
           </button>
         </div>
         <NavBar />
