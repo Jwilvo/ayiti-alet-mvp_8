@@ -13,7 +13,6 @@ const ATIKÒL = [
   { to: "/meni/blog", kle: "meni.blog", icon: "📰" },
   { to: "/meni/sijesyon", kle: "meni.sijesyon", icon: "💡" },
   { to: "/meni/gid-kominotè", kle: "meni.gid_kominotè", icon: "📖" },
-  { to: "/admin", kle: "meni.admin", icon: "🏛️" },
 ];
 
 export default function Meni() {
@@ -63,6 +62,16 @@ export default function Meni() {
             <span style={{ color: "var(--text-muted)" }}>›</span>
           </div>
         </Link>
+
+        {user?.wòl === "admin" && (
+          <Link to="/admin" style={{ textDecoration: "none", color: "inherit" }}>
+            <div className="card" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderColor: "var(--official)" }}>
+              <span style={{ fontSize: 19 }}>🏛️</span>
+              <strong style={{ fontSize: 14, flex: 1 }}>{t("meni.admin")}</strong>
+              <span style={{ color: "var(--text-muted)" }}>›</span>
+            </div>
+          </Link>
+        )}
       </div>
       <NavBar />
     </>

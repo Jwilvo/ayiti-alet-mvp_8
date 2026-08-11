@@ -13,6 +13,7 @@ import zoneRoutes from "./routes/zones";
 import notificationRoutes from "./routes/notifications";
 import sijesyonRoutes from "./routes/sijesyon";
 import lyeRoutes from "./routes/lye";
+import { demareKonfimasyonOtomatikWorker } from "./autoKonfimasyon";
 
 async function main() {
   const app = express();
@@ -83,6 +84,7 @@ async function main() {
   app.listen(PORT, () => {
     console.log(`Ayiti Alèt API ap kouri sou pò ${PORT}`);
   });
+  demareKonfimasyonOtomatikWorker();
 }
 
 main();

@@ -99,7 +99,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export const api = {
   health: () => request<{ statut: string }>("/health"),
 
-  register: (body: { nom: string; telefon: string; motDePasse: string; komin?: string; katye?: string }) =>
+  register: (body: {
+    nom: string; telefon: string; motDePasse: string; komin?: string; katye?: string;
+    email?: string; nonKonplè?: string; dokimanTip?: "NIF" | "CIN" | "Paspò"; dokimanNimewo?: string; adrèsKay?: string;
+  }) =>
     request<{ token: string; user: CurrentUser }>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
 
   login: (body: { telefon: string; motDePasse: string }) =>

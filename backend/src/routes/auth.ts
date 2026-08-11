@@ -6,24 +6,44 @@ import { z } from "zod";
 import { pool } from "../pg";
 import { AuthedRequest, JWT_SECRET, requireAuth } from "../middleware/auth";
 import { voyeSms } from "../sms";
+import { chifre, ashDokiman } from "../encryption";
 
 const router = Router();
+
+// Modpas "fòma sekirize": omwen 8 karaktè, yon lèt majiskil, yon chif, e yon
+// karaktè espesyal — sa redwi anpil risk yon kont "vinerab" fasil pou devine.
+const modPasSchema = z
+  .string()
+  .min(8, "Modpas la dwe gen omwen 8 karaktè.")
+  .regex(/[A-Z]/, "Modpas la dwe gen omwen yon lèt majiskil.")
+  .regex(/[0-9]/, "Modpas la dwe gen omwen yon chif.")
+  .regex(/[^A-Za-z0-9]/, "Modpas la dwe gen omwen yon karaktè espesyal (egzanp: ! @ # $).");
 
 const registerSchema = z.object({
   nom: z.string().min(2),
   telefon: z.string().min(8),
   email: z.string().email().optional(),
-  motDePasse: z.string().min(6),
+  motDePasse: modPasSchema,
   komin: z.string().optional(),
   katye: z.string().optional(),
+  nonKonplè: z.string().min(3, "Bay non konplè, jan li ekri sou dokiman ofisyèl ou.").optional(),
+  dokimanTip: z.enum(["NIF", "CIN", "Paspò"]).optional(),
+  dokimanNimewo: z.string().min(4).optional(),
+  adrèsKay: z.string().optional(),
 });
 
 router.post("/register", async (req, res, next) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ erè: "Done yo pa valid.", detay: parsed.error.flatten() });
+    const premyèErè = parsed.error.errors[0]?.message ?? "Done yo pa valid.";
+    return res.status(400).json({ erè: premyèErè, detay: parsed.error.flatten() });
   }
-  const { nom, telefon, email, motDePasse, komin, katye } = parsed.data;
+  const { nom, telefon, email, motDePasse, komin, katye, nonKonplè, dokimanTip, dokimanNimewo, adrèsKay } = parsed.data;
+
+  // Si youn nan (tip, nimewo) bay, tou de dwe bay ansanm.
+  if ((dokimanTip && !dokimanNimewo) || (!dokimanTip && dokimanNimewo)) {
+    return res.status(400).json({ erè: "Bay tou de tip dokiman an AK nimewo li." });
+  }
 
   try {
     const egziste = await pool.query("SELECT id FROM users WHERE telefon = $1", [telefon]);
@@ -31,12 +51,23 @@ router.post("/register", async (req, res, next) => {
       return res.status(409).json({ erè: "Yon kont deja itilize nimewo telefòn sa a." });
     }
 
+    let dokimanAsh: string | null = null;
+    let dokimanChifre: string | null = null;
+    if (dokimanNimewo) {
+      dokimanAsh = ashDokiman(dokimanNimewo);
+      const dejaGenyen = await pool.query("SELECT id FROM users WHERE dokiman_ash = $1", [dokimanAsh]);
+      if (dejaGenyen.rows.length > 0) {
+        return res.status(409).json({ erè: "Gen deja yon kont ki itilize menm nimewo dokiman idantite sa a." });
+      }
+      dokimanChifre = chifre(dokimanNimewo);
+    }
+
     const hash = await bcrypt.hash(motDePasse, 10);
     const { rows } = await pool.query(
-      `INSERT INTO users (nom, telefon, email, mot_de_pass, komin, katye)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO users (nom, telefon, email, mot_de_pass, komin, katye, non_konplè, dokiman_tip, dokiman_ash, dokiman_chifre, adrès_kay)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING id, nom, telefon, komin, katye, wol`,
-      [nom, telefon, email ?? null, hash, komin ?? null, katye ?? null]
+      [nom, telefon, email ?? null, hash, komin ?? null, katye ?? null, nonKonplè ?? null, dokimanTip ?? null, dokimanAsh, dokimanChifre, adrèsKay ?? null]
     );
     const user = rows[0];
 

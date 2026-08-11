@@ -136,7 +136,12 @@ export default function Kont() {
   const [mòd, setMòd] = useState<"login" | "register" | "bliye">("login");
   const [nom, setNom] = useState("");
   const [telefon, setTelefon] = useState("");
+  const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
+  const [nonKonplè, setNonKonplè] = useState("");
+  const [dokimanTip, setDokimanTip] = useState<"" | "NIF" | "CIN" | "Paspò">("");
+  const [dokimanNimewo, setDokimanNimewo] = useState("");
+  const [adrèsKay, setAdrèsKay] = useState("");
   const [loading, setLoading] = useState(false);
   const [erè, setErè] = useState("");
 
@@ -148,7 +153,16 @@ export default function Kont() {
       const res =
         mòd === "login"
           ? await api.login({ telefon, motDePasse })
-          : await api.register({ nom, telefon, motDePasse });
+          : await api.register({
+              nom,
+              telefon,
+              motDePasse,
+              email: email || undefined,
+              nonKonplè: nonKonplè || undefined,
+              dokimanTip: dokimanTip || undefined,
+              dokimanNimewo: dokimanNimewo || undefined,
+              adrèsKay: adrèsKay || undefined,
+            });
       saveSession(res.token, res.user);
       setUser(res.user);
     } catch (e: any) {
@@ -205,14 +219,43 @@ export default function Kont() {
             <form onSubmit={soumèt}>
               {mòd === "register" && (
                 <>
-                  <label>Non konplè</label>
-                  <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Non ou" />
+                  <label>Non ki afiche (surnom oswa ti non)</label>
+                  <input value={nom} onChange={(e) => setNom(e.target.value)} placeholder="Egzanp: Jan" />
+
+                  <label>Non konplè (jan li ekri sou dokiman ofisyèl)</label>
+                  <input value={nonKonplè} onChange={(e) => setNonKonplè(e.target.value)} placeholder="Jan Batis Pyè" />
+
+                  <label>Tip dokiman idantite</label>
+                  <select value={dokimanTip} onChange={(e) => setDokimanTip(e.target.value as any)}>
+                    <option value="">— Chwazi —</option>
+                    <option value="NIF">NIF</option>
+                    <option value="CIN">CIN</option>
+                    <option value="Paspò">Paspò</option>
+                  </select>
+
+                  {dokimanTip && (
+                    <>
+                      <label>Nimewo {dokimanTip} la</label>
+                      <input value={dokimanNimewo} onChange={(e) => setDokimanNimewo(e.target.value)} placeholder="Nimewo dokiman an" />
+                    </>
+                  )}
+
+                  <label>Adrès kay (opsyonèl)</label>
+                  <input value={adrèsKay} onChange={(e) => setAdrèsKay(e.target.value)} placeholder="Egzanp: Ri Kapwa, Delmas 33" />
+
+                  <label>Adrès imèl (opsyonèl)</label>
+                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="egzanp@imèl.com" />
                 </>
               )}
               <label>Nimewo telefòn</label>
               <input value={telefon} onChange={(e) => setTelefon(e.target.value)} placeholder="50937000000" />
               <label>Modpas</label>
               <input type="password" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} placeholder="••••••••" />
+              {mòd === "register" && (
+                <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: -8 }}>
+                  Omwen 8 karaktè, ak yon majiskil, yon chif, ak yon karaktè espesyal (egzanp: Sekrè123!)
+                </p>
+              )}
 
               {erè && <div className="banner banner-error">{erè}</div>}
 

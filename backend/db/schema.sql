@@ -199,3 +199,23 @@ CREATE TABLE IF NOT EXISTS lye_itilizatè (
 );
 
 CREATE INDEX IF NOT EXISTS lye_itilizatè_user_id_idx ON lye_itilizatè (user_id);
+
+-- ===== Sekirite done itilizatè: plis detay ak idantite verifyab =====
+-- Nimewo dokiman idantite (NIF/CIN/Paspò) pa janm estoke an klè: nou gen
+-- yon "ash" (SHA-256, fiks) pou verifye inisite san nou pa ka retounen l
+-- an klè, ak yon vèsyon "chifre" (AES-256-GCM) si nou bezwen l afiche/verifye
+-- pita (egzanp pou otorite ki verifye idantite pandan yon ankèt ofisyèl).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS non_konplè text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS adrès_kay text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_tip text CHECK (dokiman_tip IN ('NIF', 'CIN', 'Paspò'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_ash text;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_chifre text;
+
+CREATE UNIQUE INDEX IF NOT EXISTS users_dokiman_ash_uniq ON users (dokiman_ash) WHERE dokiman_ash IS NOT NULL;
+
+-- ===== Konfimasyon otomatik administrasyon (1 minit apre yon rapò) =====
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS konfimasyon_pwograme_nan timestamptz;
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS konfimasyon_voye boolean NOT NULL DEFAULT false;
+
+CREATE INDEX IF NOT EXISTS reports_konfimasyon_pwograme_idx ON reports (konfimasyon_pwograme_nan)
+  WHERE konfimasyon_voye = false;

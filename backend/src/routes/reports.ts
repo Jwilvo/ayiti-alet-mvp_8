@@ -11,7 +11,7 @@ const RAYON_IJANS_MÈT = 15000; // menm sèy ak frontend la (15km) — gade cate
 
 const router = Router();
 
-const AUTORITE_PA_KATEGORI: Record<string, string[]> = {
+export const AUTORITE_PA_KATEGORI: Record<string, string[]> = {
   kidnaping: ["PNH"],
   vòl: ["PNH"],
   zak_sispèk: ["PNH"],
@@ -32,7 +32,7 @@ const AUTORITE_PA_KATEGORI: Record<string, string[]> = {
   lòt: ["Mairi"],
 };
 
-function otoritePouKategori(kategori: string): string[] {
+export function otoritePouKategori(kategori: string): string[] {
   return AUTORITE_PA_KATEGORI[kategori] ?? ["Mairi"];
 }
 
@@ -78,8 +78,8 @@ router.post("/", optionalAuth, async (req: AuthedRequest, res, next) => {
   try {
     await client.query("BEGIN");
     const { rows } = await client.query(
-      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès, komin)
-       VALUES ($1, $2, $3, $4, $5, $6, ST_SetSRID(ST_MakePoint($7, $8), 4326)::geography, $9, $10)
+      `INSERT INTO reports (user_id, anonim, kategori, tit, deskripsyon, niveau_ijans, lokalizasyon, adrès, komin, konfimasyon_pwograme_nan)
+       VALUES ($1, $2, $3, $4, $5, $6, ST_SetSRID(ST_MakePoint($7, $8), 4326)::geography, $9, $10, now() + interval '1 minute')
        RETURNING id, user_id AS "userId", anonim, kategori, tit, deskripsyon,
                  niveau_ijans AS "niveauIjans", statut,
                  ST_Y(lokalizasyon::geometry) AS latitude, ST_X(lokalizasyon::geometry) AS longitude,

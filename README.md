@@ -121,6 +121,23 @@ npm run dev          # http://localhost:5173
   Navigasyon prensipal la (Akèy, Alèt, Sèvis, Nouvèl, Meni), Akèy, ak Alèt/Nouvèl tradui
   konplètman. Rès aplikasyon an (kòmantè, admin, sèten paj Meni) rete an Kreyòl pou
   kounye a — kouvèti a ap ogmante nan pwochen vèsyon yo.
+- ✅ **Konfimasyon otomatik administrasyon**: 1 minit apre yon rapò kreye, yon "worker"
+  background (`backend/src/autoKonfimasyon.ts`, verifye chak 15 segond, rezisyan menm si
+  sèvè a rekòmanse) ajoute yon kòmantè otomatik ki di administrasyon resevwa rapò a e l ap
+  transfere l bay otorite konsène a. Teste an dirèk — mache egzakteman apre 60 segond.
+- ✅ **Sekirite done itilizatè yo, elaji**:
+  - Enskripsyon kounye a ka kolekte non konplè, tip dokiman idantite (NIF/CIN/Paspò),
+    nimewo li, ak adrès kay.
+  - Nimewo dokiman idantite yo **pa janm estoke an klè**: yon ash SHA-256 fiks sèvi pou
+    detekte doub kont (menm si moun nan ekri l ak/san tirè/espas), e yon vèsyon chifre
+    AES-256-GCM (`backend/src/encryption.ts`) estoke pou konsiltasyon ofisyèl pita.
+  - Restriksyon: yon moun **pa ka** kreye 2 kont ak menm nimewo dokiman — teste an dirèk.
+  - Modpas dwe swiv yon "fòma sekirize" (omwen 8 karaktè, yon majiskil, yon chif, yon
+    karaktè espesyal) — validasyon backend teste ak modpas fèb (rejte) ak fò (aksepte).
+  - Panèl Administrasyon **pa parèt ankò nan Meni pou sitwayen nòmal yo** — li sèlman
+    vizib pou kont ki gen wòl "admin". (Wout `/admin` li menm te toujou mande kont admin
+    separe pou konekte — sa a se yon amelyorasyon vizibilite/UX, pa yon nouvo restriksyon
+    sekirite backend.)
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 
