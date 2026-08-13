@@ -96,6 +96,12 @@ CREATE TABLE IF NOT EXISTS places (
 CREATE INDEX IF NOT EXISTS places_lokalizasyon_idx ON places USING GIST (lokalizasyon);
 CREATE INDEX IF NOT EXISTS places_kategori_idx ON places (kategori);
 
+-- "direktè_non" se yon chan OPSYONÈL admin ka ranpli/mete ajou lè yo gen yon
+-- konfimasyon reyèl — nou pa ranpli l otomatikman nan seed done paske non
+-- direktè/chèf enstitisyon yo chanje souvan (nominasyon politik) e nou pa ka
+-- verifye/kenbe l ajou pou 140 komin san yon sous ofisyèl fyab.
+ALTER TABLE places ADD COLUMN IF NOT EXISTS direktè_non text;
+
 CREATE TABLE IF NOT EXISTS sos_events (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id          uuid REFERENCES users(id),

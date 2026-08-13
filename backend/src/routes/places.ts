@@ -6,7 +6,7 @@ const router = Router();
 const PLACE_SELECT = `
   SELECT id, non, kategori, sou_kategori AS "souKategori", adrès, telefon, orè,
          ST_Y(lokalizasyon::geometry) AS latitude, ST_X(lokalizasyon::geometry) AS longitude,
-         komin
+         komin, direktè_non AS "direktèNon"
   FROM places
 `;
 

@@ -3,7 +3,8 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import { api, Place } from "../api";
 import { t } from "../i18n";
-import { useLangVèsyon } from "../hooks";
+import { useLangVèsyon, useUserPosition } from "../hooks";
+import { distansKm } from "../categories";
 
 const KATEGORI = [
   { key: "", kle: "sèvis.tout", emoji: "📍" },
@@ -19,6 +20,7 @@ export default function Places() {
   const [q, setQ] = useState("");
   const [places, setPlaces] = useState<Place[] | null>(null);
   const [erè, setErè] = useState("");
+  const pozisyon = useUserPosition(); // otomatik, san bouton — gade hooks.ts
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -31,11 +33,26 @@ export default function Places() {
     return () => clearTimeout(timeout);
   }, [kategori, q]);
 
+  // Klase pa distans (pi pre an premye) selon pozisyon itilizatè a — konsa
+  // sèvis nan komin ki pi pre yo parèt an premye, san yo pa bezwen chwazi
+  // okenn komin manyèlman.
+  const placesKlase = places
+    ? [...places].sort((a, b) => {
+        if (!pozisyon) return 0;
+        const dA = distansKm(pozisyon.lat, pozisyon.lng, a.latitude, a.longitude);
+        const dB = distansKm(pozisyon.lat, pozisyon.lng, b.latitude, b.longitude);
+        return dA - dB;
+      })
+    : null;
+
   return (
     <>
       <TopBar />
       <div className="screen">
         <h1 style={{ fontSize: 20 }}>{t("sèvis.tit")}</h1>
+        <p style={{ color: "var(--text-muted)", fontSize: 12.5, marginTop: -4, marginBottom: 12 }}>
+          Sèlman enstitisyon piblik, klase pa pwoksimite ak pozisyon w.
+        </p>
         <input placeholder={t("sèvis.chèche")} value={q} onChange={(e) => setQ(e.target.value)} />
 
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 14 }}>
@@ -58,28 +75,36 @@ export default function Places() {
         </div>
 
         {erè && <div className="banner banner-error">{erè}</div>}
-        {!places && !erè && <p className="empty">{t("sèvis.ap_chèche")}</p>}
-        {places && places.length === 0 && <p className="empty">{t("sèvis.pa_jwenn")}</p>}
+        {!placesKlase && !erè && <p className="empty">{t("sèvis.ap_chèche")}</p>}
+        {placesKlase && placesKlase.length === 0 && <p className="empty">{t("sèvis.pa_jwenn")}</p>}
 
-        {places?.map((p) => (
-          <div key={p.id} className="card">
-            <div className="place-row">
-              <strong style={{ fontSize: 14.5 }}>{p.non}</strong>
-              {p.orè && <span className="place-dist">{p.orè}</span>}
-            </div>
-            <div className="report-meta">
-              {p.adrès}
-              {p.komin ? ` · ${p.komin}` : ""}
-            </div>
-            {p.telefon && (
-              <div style={{ marginTop: 8 }}>
-                <a href={`tel:${p.telefon}`} className="btn btn-ghost" style={{ padding: "7px 12px", fontSize: 12.5 }}>
-                  📞 {p.telefon}
-                </a>
+        {placesKlase?.map((p) => {
+          const dist = pozisyon ? distansKm(pozisyon.lat, pozisyon.lng, p.latitude, p.longitude) : null;
+          return (
+            <div key={p.id} className="card">
+              <div className="place-row">
+                <strong style={{ fontSize: 14.5 }}>{p.non}</strong>
+                {dist !== null && <span className="place-dist">{dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(0)}km`}</span>}
               </div>
-            )}
-          </div>
-        ))}
+              <div className="report-meta">
+                {p.adrès}
+                {p.komin ? ` · ${p.komin}` : ""}
+              </div>
+              {p.direktèNon && (
+                <div style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: 4 }}>
+                  👤 {p.direktèNon}
+                </div>
+              )}
+              {p.telefon && (
+                <div style={{ marginTop: 8 }}>
+                  <a href={`tel:${p.telefon}`} className="btn btn-ghost" style={{ padding: "7px 12px", fontSize: 12.5 }}>
+                    📞 {p.telefon}
+                  </a>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       <NavBar />
     </>

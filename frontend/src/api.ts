@@ -39,6 +39,7 @@ export interface Place {
   latitude: number;
   longitude: number;
   komin?: string;
+  direktèNon?: string;
 }
 export interface CurrentUser { id: string; nom: string; telefon: string; komin?: string; katye?: string; wòl?: "sitwayen" | "admin"; niveauKonfyans?: number; }
 

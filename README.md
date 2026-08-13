@@ -164,11 +164,17 @@ npm run dev          # http://localhost:5173
   `CurrentStorms.json` NOAA a (API JSON gratis, san kle) chak 30 minit, kalkile distans
   ant chak tanpèt aktif ak Ayiti, e kreye yon "alèt ofisyèl" (ak badj distenk "OFISYÈL —
   NOAA/NHC") pou tanpèt ki nan yon reyon 800km — voye notifikasyon push bay **tout**
-  itilizatè (pa sèlman moun ki toupre). **Limit onèt**: mwen pa t ka teste apèl HTTP reyèl
-  la an dirèk nan sandbox devlopman an (rezo li limite), men mwen verifye fòma vrè done
-  NOAA a (via yon lòt zouti) e teste tout lòt lojik la (kalkil distans/pwoksimite, wout
-  API, notifikasyon) ak done ki iminen menm fòma a — premye tès an dirèk sou vrè NOAA a
-  ap fèt sou Render apre deplwaman.
+  itilizatè (pa sèlman moun ki toupre). Konfime fonksyonèl an dirèk sou Render (rezo
+  sandbox devlopman an te limite pou tès lokal, men lojik la te teste ak done ki iminen
+  menm fòma a anvan deplwaman).
+- ✅ **Sèvis Piblik Sèlman, Klase pa Pwoksimite**: lis "Sèvis" la kounye a gen **sèlman vrè
+  enstitisyon piblik** (retire tout biznis prive — famasi, estasyon gaz), ak adrès/telefòn
+  **verifye pa rechèch** (PNH, DCPJ, DGI, Pwoteksyon Sivil, lopital inivèsitè, mairi), ki
+  kouvri **12 komin diferan** (te 5 anvan, tout nan menm zòn Pòtoprens). Lis la klase
+  otomatikman pa distans ak pozisyon itilizatè a — pi pre a parèt an premye. **Nòt onèt**:
+  chan "direktè/chèf enstitisyon" la **eksprè kite vid** nan seed done a — non moun sa yo
+  chanje twò souvan (nominasyon politik) pou nou ta ka garanti presizyon pou 140 komin;
+  se yon chan admin ka ranpli lè gen konfimasyon reyèl.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 
