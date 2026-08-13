@@ -13,7 +13,10 @@ import zoneRoutes from "./routes/zones";
 import notificationRoutes from "./routes/notifications";
 import sijesyonRoutes from "./routes/sijesyon";
 import lyeRoutes from "./routes/lye";
+import ijansRoutes from "./routes/ijans";
+import aletMeteyoRoutes from "./routes/alet-meteyo";
 import { demareKonfimasyonOtomatikWorker } from "./autoKonfimasyon";
+import { demareAlètMeteyoWorker } from "./alet-meteyo";
 
 async function main() {
   const app = express();
@@ -95,6 +98,8 @@ async function main() {
   app.use("/notifications", notificationRoutes);
   app.use("/sijesyon", sijesyonRoutes);
   app.use("/lye", lyeRoutes);
+  app.use("/ijans", ijansRoutes);
+  app.use("/alet-meteyo", aletMeteyoRoutes);
 
   app.use((_req, res) => res.status(404).json({ erè: "Wout la pa egziste." }));
 
@@ -109,6 +114,7 @@ async function main() {
     console.log(`Ayiti Alèt API ap kouri sou pò ${PORT}`);
   });
   demareKonfimasyonOtomatikWorker();
+  demareAlètMeteyoWorker();
 }
 
 main();

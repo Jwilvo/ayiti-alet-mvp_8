@@ -66,7 +66,7 @@ router.post("/register", async (req, res, next) => {
     const { rows } = await pool.query(
       `INSERT INTO users (nom, telefon, email, mot_de_pass, komin, katye, non_konplè, dokiman_tip, dokiman_ash, dokiman_chifre, adrès_kay)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       RETURNING id, nom, telefon, komin, katye, wol`,
+       RETURNING id, nom, telefon, komin, katye, wol, niveau_konfyans`,
       [nom, telefon, email ?? null, hash, komin ?? null, katye ?? null, nonKonplè ?? null, dokimanTip ?? null, dokimanAsh, dokimanChifre, adrèsKay ?? null]
     );
     const user = rows[0];
@@ -74,7 +74,7 @@ router.post("/register", async (req, res, next) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "30d" });
     res.status(201).json({
       token,
-      user: { id: user.id, nom: user.nom, telefon: user.telefon, komin: user.komin, katye: user.katye, wòl: user.wol },
+      user: { id: user.id, nom: user.nom, telefon: user.telefon, komin: user.komin, katye: user.katye, wòl: user.wol, niveauKonfyans: user.niveau_konfyans },
     });
   } catch (e) {
     next(e);
@@ -95,7 +95,7 @@ router.post("/login", async (req, res, next) => {
 
   try {
     const { rows } = await pool.query(
-      "SELECT id, nom, telefon, komin, katye, wol, mot_de_pass FROM users WHERE telefon = $1",
+      "SELECT id, nom, telefon, komin, katye, wol, mot_de_pass, niveau_konfyans FROM users WHERE telefon = $1",
       [telefon]
     );
     const user = rows[0];
@@ -110,7 +110,7 @@ router.post("/login", async (req, res, next) => {
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: "30d" });
     res.json({
       token,
-      user: { id: user.id, nom: user.nom, telefon: user.telefon, komin: user.komin, katye: user.katye, wòl: user.wol },
+      user: { id: user.id, nom: user.nom, telefon: user.telefon, komin: user.komin, katye: user.katye, wòl: user.wol, niveauKonfyans: user.niveau_konfyans },
     });
   } catch (e) {
     next(e);
@@ -120,12 +120,12 @@ router.post("/login", async (req, res, next) => {
 router.get("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const { rows } = await pool.query(
-      "SELECT id, nom, telefon, komin, katye, wol FROM users WHERE id = $1",
+      "SELECT id, nom, telefon, komin, katye, wol, niveau_konfyans FROM users WHERE id = $1",
       [req.userId]
     );
     if (!rows[0]) return res.status(404).json({ erè: "Itilizatè a pa jwenn." });
     const u = rows[0];
-    res.json({ id: u.id, nom: u.nom, telefon: u.telefon, komin: u.komin, katye: u.katye, wòl: u.wol });
+    res.json({ id: u.id, nom: u.nom, telefon: u.telefon, komin: u.komin, katye: u.katye, wòl: u.wol, niveauKonfyans: u.niveau_konfyans });
   } catch (e) {
     next(e);
   }
@@ -145,7 +145,7 @@ router.patch("/me", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const { rows } = await pool.query(
       `UPDATE users SET komin = COALESCE($1, komin), katye = COALESCE($2, katye) WHERE id = $3
-       RETURNING id, nom, telefon, komin, katye, wol`,
+       RETURNING id, nom, telefon, komin, katye, wol, niveau_konfyans`,
       [parsed.data.komin ?? null, parsed.data.katye ?? null, req.userId]
     );
     const u = rows[0];

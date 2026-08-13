@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
-import { api, Report } from "../api";
+import { api, Report, IjansDeklare } from "../api";
 import { useActiveSos, useUserPosition, useLangVèsyon } from "../hooks";
 import { deklancheSos, fèmenSos, lyenSwiv, mesajSmsTouKontak, mesajWhatsAppSos } from "../sos";
 import { categoryMeta, severityColor, distansKm, nivoPètinans } from "../categories";
@@ -16,6 +16,9 @@ export default function Home() {
   const [reports, setReports] = useState<Report[] | null>(null);
   const [sosArmed, setSosArmed] = useState(false);
   const [sosChaje, setSosChaje] = useState(false);
+  const [ijansAktif, setIjansAktif] = useState<IjansDeklare[]>([]);
+  const [ijansRepondi, setIjansRepondi] = useState<Set<string>>(new Set());
+  const [ijansAnKou, setIjansAnKou] = useState(false);
   const navigate = useNavigate();
   const activeSos = useActiveSos();
   const pozisyon = useUserPosition(); // otomatik, san bouton — gade hooks.ts
@@ -23,6 +26,23 @@ export default function Home() {
   useEffect(() => {
     api.listReports({ limit: 50 }).then(setReports).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!pozisyon) return;
+    api.ijansAktif(pozisyon.lat, pozisyon.lng).then(setIjansAktif).catch(() => {});
+  }, [pozisyon]);
+
+  async function makAnSekirite(id: string) {
+    setIjansAnKou(true);
+    try {
+      await api.ijansAnSekirite(id);
+      setIjansRepondi((s) => new Set(s).add(id));
+    } catch {
+      // silans — moun nan ka eseye ankò
+    } finally {
+      setIjansAnKou(false);
+    }
+  }
 
   function pranPozisyonKounyeA(): Promise<{ lat: number; lng: number }> {
     return new Promise((resolve) => {
@@ -79,6 +99,29 @@ export default function Home() {
           markers={markers}
           plenEkran
         />
+
+        {!activeSos && ijansAktif.filter((i) => !ijansRepondi.has(i.id)).map((ijans) => (
+          <div key={ijans.id} className="map-flotan-banner" style={{ borderColor: "var(--amber)" }}>
+            <strong style={{ color: "var(--amber)", fontSize: 13 }}>🆘 Ijans deklare: {ijans.tit}</strong>
+            {ijans.deskripsyon && (
+              <p style={{ fontSize: 12, margin: "4px 0 8px", color: "var(--text-muted)" }}>{ijans.deskripsyon}</p>
+            )}
+            <button
+              className="btn btn-primary btn-block"
+              style={{ padding: "9px 10px", fontSize: 12.5 }}
+              onClick={() => makAnSekirite(ijans.id)}
+              disabled={ijansAnKou}
+            >
+              {ijansAnKou ? <span className="spinner" /> : "✔ Mwen An Sekirite"}
+            </button>
+          </div>
+        ))}
+
+        {ijansAktif.some((i) => ijansRepondi.has(i.id)) && !activeSos && (
+          <div className="map-flotan-banner" style={{ borderColor: "var(--calm)" }}>
+            <strong style={{ color: "var(--calm)", fontSize: 13 }}>✔ Nou avize kontak ou yo — ou an sekirite.</strong>
+          </div>
+        )}
 
         {activeSos && (
           <div className="map-flotan-banner">

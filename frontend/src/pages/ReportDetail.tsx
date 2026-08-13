@@ -4,7 +4,7 @@ import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
 import IncidentMap from "../components/IncidentMap";
 import { api, Report, mediaUrl } from "../api";
-import { categoryMeta, severityColor, timeAgo, nivoLabel } from "../categories";
+import { categoryMeta, severityColor, timeAgo, nivoLabel, nivoKonfyans } from "../categories";
 import { t } from "../i18n";
 import { useLangVèsyon } from "../hooks";
 
@@ -101,6 +101,24 @@ export default function ReportDetail() {
             {report.komin && ` · ${report.komin}`}
             {report.anonim && ` · ${t("rapò.rapò_anonim")}`}
           </div>
+
+          {!report.anonim && report.otèNon && (
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, fontSize: 12.5, color: "var(--text-muted)" }}>
+              <span>{nivoKonfyans(report.otèNivoKonfyans ?? 0).emoji}</span>
+              <span>
+                {report.otèNon} · {nivoKonfyans(report.otèNivoKonfyans ?? 0).label}
+              </span>
+            </div>
+          )}
+
+          {report.kachePouRevizyon && (
+            <div className="banner" style={{ background: "var(--amber-dim)", borderColor: "rgba(245,166,35,0.3)", marginBottom: 10 }}>
+              <strong style={{ color: "var(--amber)", fontSize: 13 }}>⚠ Ap tann revizyon</strong>
+              <p style={{ fontSize: 12, margin: "4px 0 0", color: "#e8c98a" }}>
+                Plizyè moun siyale rapò sa a — li kache nan flux jeneral la an atandan yon admin revize l.
+              </p>
+            </div>
+          )}
 
           <span
             className="tag"

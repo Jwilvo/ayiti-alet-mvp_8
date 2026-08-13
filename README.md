@@ -148,6 +148,27 @@ npm run dev          # http://localhost:5173
   - **Chifreman ki refize an silans**: si `ENCRYPTION_KEY` pa konfigire e `NODE_ENV=production`,
     sèvè a **refize** kreye nenpòt kont ak dokiman idantite (olye chifre l ak yon kle
     tanporè ki ta pèdi apre yon rekòmansaj) — teste an dirèk, 0 kont pasyèl kreye.
+- ✅ **Sistèm Nivo Konfyans / Badj**: rapò konfime (+2), siyale (-3), verifye pa admin (+5),
+  rejte pa admin (-5) — tout ajiste `niveau_konfyans` otè rapò a otomatikman. Badj yo (🌱
+  Nouvo Manm, 👍 Kontribitè, ⭐ Kontribitè Konfyans, 🛡️ Vwazen Vijilan) parèt sou Detay Rapò
+  (si pa anonim) ak Pwofil. Teste an dirèk soti a-z.
+- ✅ **Redwi Fo Rapò/Spam**: yon rapò ki jwenn 3+ siyalman kache otomatikman nan flux
+  piblik la (ap tann revizyon admin), ak yon bandwo avètisman klè sou detay li. Dekache
+  otomatikman lè admin pran yon desizyon. Teste an dirèk: 3yèm siyalman deklanche kachman
+  an, dekonfime nan lis piblik la.
+- ✅ **"Mwen An Sekirite" pandan Gwo Katastwòf**: admin ka deklare yon ijans (tit, sant
+  jewografik, reyon) nan Panèl Admin. Tout itilizatè nan reyon a resevwa yon notifikasyon
+  push, e yon sèl klik "✔ Mwen An Sekirite" voye yon SMS otomatik bay kontak ijans yo.
+  Teste an dirèk konplè: deklarasyon → deteksyon pwoksimite → SMS otomatik → konte admin.
+- ✅ **Alèt Meteyo Ofisyèl (NOAA/NHC)**: yon "worker" background tcheke
+  `CurrentStorms.json` NOAA a (API JSON gratis, san kle) chak 30 minit, kalkile distans
+  ant chak tanpèt aktif ak Ayiti, e kreye yon "alèt ofisyèl" (ak badj distenk "OFISYÈL —
+  NOAA/NHC") pou tanpèt ki nan yon reyon 800km — voye notifikasyon push bay **tout**
+  itilizatè (pa sèlman moun ki toupre). **Limit onèt**: mwen pa t ka teste apèl HTTP reyèl
+  la an dirèk nan sandbox devlopman an (rezo li limite), men mwen verifye fòma vrè done
+  NOAA a (via yon lòt zouti) e teste tout lòt lojik la (kalkil distans/pwoksimite, wout
+  API, notifikasyon) ak done ki iminen menm fòma a — premye tès an dirèk sou vrè NOAA a
+  ap fèt sou Render apre deplwaman.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

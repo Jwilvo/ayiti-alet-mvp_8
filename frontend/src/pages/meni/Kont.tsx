@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TopBar from "../../components/TopBar";
 import NavBar from "../../components/NavBar";
 import { api, getSessionUser, saveSession, KontakIjans } from "../../api";
+import { nivoKonfyans } from "../../categories";
 
 function KontakIjansEditor() {
   const [kontak, setKontak] = useState<KontakIjans[]>([]);
@@ -193,6 +194,10 @@ export default function Kont() {
               </div>
               <h2 style={{ fontSize: 18 }}>{user.nom}</h2>
               <p style={{ color: "var(--text-muted)", fontSize: 13.5, margin: "4px 0 0" }}>{user.telefon}</p>
+              <div style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6, background: "var(--surface-raised)", padding: "6px 12px", borderRadius: 20, fontSize: 12.5 }}>
+                <span>{nivoKonfyans(user.niveauKonfyans ?? 0).emoji}</span>
+                <span>{nivoKonfyans(user.niveauKonfyans ?? 0).label} ({user.niveauKonfyans ?? 0} pwen)</span>
+              </div>
             </div>
             <KontakIjansEditor />
           </>

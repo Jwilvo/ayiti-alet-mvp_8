@@ -219,3 +219,45 @@ ALTER TABLE reports ADD COLUMN IF NOT EXISTS konfimasyon_voye boolean NOT NULL D
 
 CREATE INDEX IF NOT EXISTS reports_konfimasyon_pwograme_idx ON reports (konfimasyon_pwograme_nan)
   WHERE konfimasyon_voye = false;
+
+-- ===== Redwi enpak fo rapò/spam (itilize ak niveau_konfyans ki deja egziste
+-- sou "users") — yon rapò kache otomatikman nan flux jeneral la si plizyè
+-- moun siyale l, ap tann revizyon admin.
+ALTER TABLE reports ADD COLUMN IF NOT EXISTS kache_pou_revizyon boolean NOT NULL DEFAULT false;
+
+-- ===== Ijans deklare pa admin (pou "Mwen An Sekirite") =====
+CREATE TABLE IF NOT EXISTS ijans_deklare (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  tit         text NOT NULL,
+  deskripsyon text,
+  lokalizasyon geography(Point, 4326) NOT NULL,
+  reyon_km    integer NOT NULL DEFAULT 50,
+  kreye_pa    uuid REFERENCES users(id),
+  aktif       boolean NOT NULL DEFAULT true,
+  kreye_nan   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS ijans_deklare_lokalizasyon_idx ON ijans_deklare USING GIST (lokalizasyon);
+CREATE INDEX IF NOT EXISTS ijans_deklare_aktif_idx ON ijans_deklare (aktif) WHERE aktif = true;
+
+CREATE TABLE IF NOT EXISTS ijans_repons (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  ijans_id    uuid NOT NULL REFERENCES ijans_deklare(id) ON DELETE CASCADE,
+  user_id     uuid NOT NULL REFERENCES users(id),
+  kreye_nan   timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (ijans_id, user_id)
+);
+
+-- ===== Alèt meteyo ofisyèl (NOAA/NHC) =====
+CREATE TABLE IF NOT EXISTS alèt_meteyo (
+  id            text PRIMARY KEY, -- idantifyan tanpèt NOAA a (egzanp "AL032026")
+  non           text NOT NULL,
+  tip           text NOT NULL, -- "Depresyon Twopikal", "Tanpèt Twopikal", "Siklòn", elt.
+  entansite_kt  integer,
+  deskripsyon   text,
+  lyen_ofisyèl  text,
+  distans_km    integer,
+  aktif         boolean NOT NULL DEFAULT true,
+  kreye_nan     timestamptz NOT NULL DEFAULT now(),
+  mizajou_nan   timestamptz NOT NULL DEFAULT now()
+);

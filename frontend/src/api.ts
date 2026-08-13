@@ -24,6 +24,9 @@ export interface Report {
   konfimasyon?: number;
   confirmations?: unknown[];
   kòmantè?: Comment[];
+  kachePouRevizyon?: boolean;
+  otèNon?: string;
+  otèNivoKonfyans?: number;
 }
 export interface Place {
   id: string;
@@ -37,9 +40,12 @@ export interface Place {
   longitude: number;
   komin?: string;
 }
-export interface CurrentUser { id: string; nom: string; telefon: string; komin?: string; katye?: string; wòl?: "sitwayen" | "admin"; }
+export interface CurrentUser { id: string; nom: string; telefon: string; komin?: string; katye?: string; wòl?: "sitwayen" | "admin"; niveauKonfyans?: number; }
 
 export interface LyeItilizatè { id: string; non: string; latitude: number; longitude: number; kreyeNan: string; }
+export interface IjansDeklare { id: string; tit: string; deskripsyon?: string; reyonKm: number; kreyeNan: string; }
+export interface IjansAdmin extends IjansDeklare { aktif: boolean; konteAnSekirite: number; }
+export interface AletMeteyo { id: string; non: string; tip: string; entansiteKt?: number; lyenOfisyèl?: string; distansKm: number; kreyeNan: string; mizajouNan: string; }
 
 export interface AdminTandans {
   paJou: { jou: string; n: number }[];
@@ -191,6 +197,16 @@ export const api = {
   efaseLye: (id: string) => request<{ ok: boolean }>(`/lye/${id}`, { method: "DELETE" }),
 
   adminTandans: () => request<AdminTandans>("/admin/tandans"),
+
+  ijansAktif: (lat: number, lng: number) =>
+    request<IjansDeklare[]>(`/ijans/aktif?lat=${lat}&lng=${lng}`),
+  ijansAnSekirite: (id: string) => request<{ ok: boolean }>(`/ijans/${id}/an-sekirite`, { method: "POST" }),
+  adminDeklareIjans: (body: { tit: string; deskripsyon?: string; latitude: number; longitude: number; reyonKm: number }) =>
+    request<IjansDeklare>("/ijans", { method: "POST", body: JSON.stringify(body) }),
+  adminListIjans: () => request<IjansAdmin[]>("/ijans/admin/tout"),
+  adminDezaktiveIjans: (id: string) => request<{ ok: boolean }>(`/ijans/${id}/dezaktive`, { method: "PATCH" }),
+
+  aletMeteyoAktif: () => request<AletMeteyo[]>("/alet-meteyo/aktif"),
 
   setKontakIjans: (kontak: KontakIjans[]) =>
     request<KontakIjans[]>("/sos/mwen/kontak-ijans", { method: "PUT", body: JSON.stringify(kontak) }),

@@ -75,8 +75,10 @@ router.patch("/reports/:id", async (req, res, next) => {
     return res.status(400).json({ erè: `Statut dwe youn nan: ${valid.join(", ")}` });
   }
   try {
+    // Lè admin "verifye" oswa "rejte" yon rapò, li dekache l pou revizyon
+    // (paske yon vrè moun deja gade l), e nou ajiste nivo konfyans otè a.
     const { rows } = await pool.query(
-      `UPDATE reports SET statut = $1 WHERE id = $2
+      `UPDATE reports SET statut = $1, kache_pou_revizyon = false WHERE id = $2
        RETURNING id, user_id AS "userId", anonim, kategori, tit, deskripsyon,
                  niveau_ijans AS "niveauIjans", statut,
                  ST_Y(lokalizasyon::geometry) AS latitude, ST_X(lokalizasyon::geometry) AS longitude,
@@ -84,6 +86,15 @@ router.patch("/reports/:id", async (req, res, next) => {
       [statut, req.params.id]
     );
     if (!rows[0]) return res.status(404).json({ erè: "Rapò a pa egziste." });
+
+    if (rows[0].userId && (statut === "verifye" || statut === "rejte")) {
+      const chanjman = statut === "verifye" ? 5 : -5;
+      await pool.query(
+        "UPDATE users SET niveau_konfyans = GREATEST(0, niveau_konfyans + $1) WHERE id = $2",
+        [chanjman, rows[0].userId]
+      );
+    }
+
     res.json(rows[0]);
   } catch (e) {
     next(e);

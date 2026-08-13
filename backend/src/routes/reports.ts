@@ -43,11 +43,14 @@ const KATEGORI_GRAV = new Set([
 
 const REPORT_SELECT = `
   SELECT r.id, r.user_id AS "userId", r.anonim, r.kategori, r.tit, r.deskripsyon,
-         r.niveau_ijans AS "niveauIjans", r.statut,
+         r.niveau_ijans AS "niveauIjans", r.statut, r.kache_pou_revizyon AS "kachePouRevizyon",
          ST_Y(r.lokalizasyon::geometry) AS latitude,
          ST_X(r.lokalizasyon::geometry) AS longitude,
-         r.adrès, r.komin, r.kreye_nan AS "kreyeNan"
+         r.adrès, r.komin, r.kreye_nan AS "kreyeNan",
+         CASE WHEN r.anonim THEN NULL ELSE u.nom END AS "otèNon",
+         CASE WHEN r.anonim THEN NULL ELSE u.niveau_konfyans END AS "otèNivoKonfyans"
   FROM reports r
+  LEFT JOIN users u ON u.id = r.user_id
 `;
 
 const createReportSchema = z.object({
@@ -159,7 +162,7 @@ router.post("/", optionalAuth, async (req: AuthedRequest, res, next) => {
 
 router.get("/", async (req, res, next) => {
   const { kategori, niveauIjans, komin, limit } = req.query;
-  const conditions: string[] = [];
+  const conditions: string[] = ["r.kache_pou_revizyon = false"];
   const params: any[] = [];
 
   if (typeof kategori === "string") {
@@ -267,10 +270,12 @@ router.post("/:id/komante", optionalAuth, async (req: AuthedRequest, res, next) 
   }
 });
 
+const SÈY_SIYALE_POU_KACHE = 3;
+
 router.post("/:id/confirm", requireAuth, async (req: AuthedRequest, res, next) => {
   const tipAksyon = req.body.tipAksyon === "siyale" ? "siyale" : "konfime";
   try {
-    const report = await pool.query("SELECT id FROM reports WHERE id = $1", [req.params.id]);
+    const report = await pool.query("SELECT id, user_id FROM reports WHERE id = $1", [req.params.id]);
     if (!report.rows[0]) return res.status(404).json({ erè: "Rapò a pa egziste." });
 
     const { rows } = await pool.query(
@@ -280,6 +285,31 @@ router.post("/:id/confirm", requireAuth, async (req: AuthedRequest, res, next) =
        RETURNING id, report_id AS "reportId", user_id AS "userId", tip_aksyon AS "tipAksyon", kreye_nan AS "kreyeNan"`,
       [req.params.id, req.userId, tipAksyon]
     );
+
+    // Ajiste nivo konfyans otè rapò a — sèlman si rapò a pa anonim (gen yon
+    // "user_id"), e moun k ap konfime/siyale a se pa menm moun ki fè rapò a.
+    const otèId = report.rows[0].user_id;
+    if (otèId && otèId !== req.userId) {
+      const chanjman = tipAksyon === "konfime" ? 2 : -3;
+      await pool.query(
+        "UPDATE users SET niveau_konfyans = GREATEST(0, niveau_konfyans + $1) WHERE id = $2",
+        [chanjman, otèId]
+      );
+    }
+
+    // Si yon rapò jwenn plizyè "siyale", kache l otomatikman nan flux jeneral
+    // la (ap tann revizyon admin) — sa redwi enpak fo rapò san bezwen bloke
+    // moun nan totalman oswa efase rapò a.
+    if (tipAksyon === "siyale") {
+      const { rows: konte } = await pool.query(
+        "SELECT COUNT(*)::int AS n FROM report_confirmations WHERE report_id = $1 AND tip_aksyon = 'siyale'",
+        [req.params.id]
+      );
+      if (konte[0].n >= SÈY_SIYALE_POU_KACHE) {
+        await pool.query("UPDATE reports SET kache_pou_revizyon = true WHERE id = $1", [req.params.id]);
+      }
+    }
+
     res.status(201).json(rows[0]);
   } catch (e) {
     next(e);

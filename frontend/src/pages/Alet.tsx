@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TopBar from "../components/TopBar";
 import NavBar from "../components/NavBar";
@@ -7,13 +7,19 @@ import { dejaLi, markeLi } from "../unread";
 import { useVèsyonMakè, useLangVèsyon } from "../hooks";
 import { categoryMeta, timeAgo, nivoLabel } from "../categories";
 import { t } from "../i18n";
+import { api, AletMeteyo } from "../api";
 
 export default function Alet() {
   const { lis, chaje } = useRapòPaNivo("ijans");
   const [lòd, setLòd] = useState<"nouvo" | "ansyen">("nouvo");
+  const [meteyo, setMeteyo] = useState<AletMeteyo[]>([]);
   const navigate = useNavigate();
   useVèsyonMakè();
   useLangVèsyon();
+
+  useEffect(() => {
+    api.aletMeteyoAktif().then(setMeteyo).catch(() => {});
+  }, []);
 
   const lisKlase = [...lis].sort((a, b) => {
     const tA = new Date(a.rapò.kreyeNan).getTime();
@@ -74,6 +80,27 @@ export default function Alet() {
             {t("alèt.triyaj.ansyen")}
           </button>
         </div>
+
+        {meteyo.map((m) => (
+          <a
+            key={m.id}
+            href={m.lyenOfisyèl || "#"}
+            target="_blank"
+            rel="noreferrer"
+            className="card"
+            style={{ display: "block", textDecoration: "none", color: "inherit", borderColor: "var(--amber)", background: "var(--amber-dim)" }}
+          >
+            <span className="tag" style={{ background: "var(--amber)", color: "#1a1200", fontSize: 10, fontWeight: 700, marginBottom: 6, display: "inline-block" }}>
+              OFISYÈL — NOAA/NHC
+            </span>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <strong style={{ fontSize: 14 }}>🌀 {m.non}</strong>
+            </div>
+            <div className="report-meta">
+              {m.tip}{m.entansiteKt ? ` · ${m.entansiteKt}kt` : ""} · ~{m.distansKm}km de Ayiti
+            </div>
+          </a>
+        ))}
 
         {lis.length === 0 && <p className="empty">{t("alèt.vid")}</p>}
 

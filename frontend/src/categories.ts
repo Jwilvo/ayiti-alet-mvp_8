@@ -32,6 +32,15 @@ export function nivoLabel(niveau: string): string {
   return t(`nivo.${niveau}`) || niveau;
 }
 
+export interface NivoKonfyans { label: string; emoji: string; }
+
+export function nivoKonfyans(pwen: number): NivoKonfyans {
+  if (pwen >= 100) return { label: "Vwazen Vijilan", emoji: "🛡️" };
+  if (pwen >= 50) return { label: "Kontribitè Konfyans", emoji: "⭐" };
+  if (pwen >= 10) return { label: "Kontribitè", emoji: "👍" };
+  return { label: "Nouvo Manm", emoji: "🌱" };
+}
+
 export function severityColor(niveau: string) {
   if (niveau === "grav") return "var(--urgent)";
   if (niveau === "ba") return "var(--calm)";

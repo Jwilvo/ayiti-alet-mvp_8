@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactNode } from "react";
-import { api, AdminStats, AdminTandans, DuplicateGroup, Report, getSessionUser, saveSession, clearSession } from "../api";
+import { api, AdminStats, AdminTandans, DuplicateGroup, Report, IjansAdmin, getSessionUser, saveSession, clearSession } from "../api";
 import { categoryMeta, timeAgo, severityColor } from "../categories";
 import IncidentMap from "../components/IncidentMap";
 
@@ -67,6 +67,97 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
       <div style={{ fontFamily: "var(--font-display)", fontSize: 24, fontWeight: 700 }}>{value}</div>
       <div style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: 2 }}>{label}</div>
     </div>
+  );
+}
+
+function IjansPanel() {
+  const [lis, setLis] = useState<IjansAdmin[] | null>(null);
+  const [mòd, setMòd] = useState(false);
+  const [tit, setTit] = useState("");
+  const [deskripsyon, setDeskripsyon] = useState("");
+  const [pwen, setPwen] = useState<{ lat: number; lng: number } | null>(null);
+  const [reyonKm, setReyonKm] = useState(50);
+  const [chaje, setChaje] = useState(false);
+  const [erè, setErè] = useState("");
+
+  function chajeLis() {
+    api.adminListIjans().then(setLis).catch((e) => setErè(e.message));
+  }
+  useEffect(chajeLis, []);
+
+  async function deklare() {
+    if (!tit.trim() || !pwen) {
+      setErè("Bay yon tit e chwazi yon sant sou kat la.");
+      return;
+    }
+    setChaje(true);
+    setErè("");
+    try {
+      await api.adminDeklareIjans({ tit: tit.trim(), deskripsyon: deskripsyon || undefined, latitude: pwen.lat, longitude: pwen.lng, reyonKm });
+      setTit("");
+      setDeskripsyon("");
+      setPwen(null);
+      setMòd(false);
+      chajeLis();
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setChaje(false);
+    }
+  }
+
+  async function dezaktive(id: string) {
+    await api.adminDezaktiveIjans(id).catch(() => {});
+    chajeLis();
+  }
+
+  return (
+    <>
+      <div className="section-title"><h2>🆘 Ijans deklare</h2></div>
+
+      {erè && <div className="banner banner-error">{erè}</div>}
+
+      {lis?.filter((i) => i.aktif).map((i) => (
+        <div key={i.id} className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <strong style={{ fontSize: 14 }}>{i.tit}</strong>
+            <div className="report-meta">{i.reyonKm}km · {i.konteAnSekirite} moun make "an sekirite"</div>
+          </div>
+          <button className="btn btn-ghost" style={{ padding: "7px 10px", fontSize: 12 }} onClick={() => dezaktive(i.id)}>
+            Dezaktive
+          </button>
+        </div>
+      ))}
+
+      {mòd ? (
+        <div className="card">
+          <label>Tit ijans lan</label>
+          <input value={tit} onChange={(e) => setTit(e.target.value)} placeholder="Egzanp: Siklòn Fyona" />
+          <label>Deskripsyon (opsyonèl)</label>
+          <input value={deskripsyon} onChange={(e) => setDeskripsyon(e.target.value)} placeholder="Detay siplemantè" />
+          <label>Peze sou kat la pou chwazi sant zòn ijans lan</label>
+          <IncidentMap
+            center={pwen ? [pwen.lat, pwen.lng] : [18.9712, -72.2852]}
+            zoom={7}
+            height={200}
+            pickedLocation={pwen}
+            onPickLocation={(lat, lng) => setPwen({ lat, lng })}
+          />
+          <label>Reyon (km)</label>
+          <input type="number" value={reyonKm} onChange={(e) => setReyonKm(Number(e.target.value))} min={1} max={500} />
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setMòd(false)}>Anile</button>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={deklare} disabled={chaje}>
+              {chaje ? <span className="spinner" /> : "Deklare ijans lan"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button className="btn btn-urgent btn-block" onClick={() => setMòd(true)} style={{ marginBottom: 24 }}>
+          + Deklare yon nouvo ijans
+        </button>
+      )}
+    </>
   );
 }
 
@@ -207,6 +298,8 @@ function Dashboard({ onOut }: { onOut: () => void }) {
             ))}
           </div>
         )}
+
+        <IjansPanel />
 
         <TandansPanel />
 
