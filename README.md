@@ -179,6 +179,13 @@ npm run dev          # http://localhost:5173
   ta ka danjere si li pa ajou; (3) Vis-delegasyon, Dwan, ONI, Imigrasyon, Tribinal, ak
   kouvèti Sant Sante/Komisarya pou tout 140 komin yo **mande plis rechèch** pase sa mwen te
   ka fè ak konfyans nan sesyon sa a — yo pa enkli pou kounye a olye envante done.
+- ✅ **Foto Pwofil**: itilizatè ka telechaje yon foto pwofil (Meni → Reglaj → Kont, bouton
+  📷 sou sèk pwofil la) — reyitilize menm sistèm telechajman/estokaj foto rapò yo. Foto a
+  parèt nan Kont ak nan TopBar (ti foto akote non an). Teste an dirèk soti a-z: telechajman,
+  mizajou, ak persistans apre yon nouvo koneksyon.
+- ✅ **Mesaj konfimasyon otomatik jeneralize**: mesaj administrasyon an voye 1 minit apre
+  yon rapò kounye a di sèlman "Nou ap transfere l bay **enstans konsène a**" — li **pa
+  nonmen** ki otorite espesifik (PNH, Ponpye, elatriye) ap resevwa rapò a. Teste an dirèk.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

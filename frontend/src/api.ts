@@ -41,7 +41,7 @@ export interface Place {
   komin?: string;
   direktèNon?: string;
 }
-export interface CurrentUser { id: string; nom: string; telefon: string; komin?: string; katye?: string; wòl?: "sitwayen" | "admin"; niveauKonfyans?: number; }
+export interface CurrentUser { id: string; nom: string; telefon: string; komin?: string; katye?: string; wòl?: "sitwayen" | "admin"; niveauKonfyans?: number; fotoPwofil?: string; }
 
 export interface LyeItilizatè { id: string; non: string; latitude: number; longitude: number; kreyeNan: string; }
 export interface IjansDeklare { id: string; tit: string; deskripsyon?: string; reyonKm: number; kreyeNan: string; }
@@ -117,7 +117,7 @@ export const api = {
 
   me: () => request<CurrentUser>("/auth/me"),
 
-  updateMe: (body: { komin?: string; katye?: string }) =>
+  updateMe: (body: { komin?: string; katye?: string; fotoPwofil?: string }) =>
     request<CurrentUser>("/auth/me", { method: "PATCH", body: JSON.stringify(body) }),
 
   mizajouPozisyon: (latitude: number, longitude: number) =>

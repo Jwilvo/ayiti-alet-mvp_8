@@ -1,5 +1,4 @@
 import { pool } from "./pg";
-import { otoritePouKategori } from "./routes/reports";
 
 // Verifye chak 15 segond si gen rapò ki merite konfimasyon otomatik la (1
 // minit apre kreyasyon). Nou itilize yon "pwograme_nan" estoke nan baz done
@@ -16,8 +15,7 @@ async function trete() {
     );
 
     for (const r of rows) {
-      const otorite = otoritePouKategori(r.kategori).join(", ");
-      const mesaj = `Administrasyon Ayiti Alèt resevwa rapò sa a. Nou ap transfere l bay ${otorite} pou swiv.`;
+      const mesaj = "Administrasyon Ayiti Alèt resevwa rapò sa a. Nou ap transfere l bay enstans konsène a pou swiv.";
 
       const client = await pool.connect();
       try {

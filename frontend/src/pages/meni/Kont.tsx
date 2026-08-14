@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TopBar from "../../components/TopBar";
 import NavBar from "../../components/NavBar";
-import { api, getSessionUser, saveSession, KontakIjans } from "../../api";
+import { api, getSessionUser, saveSession, updateSessionUser, mediaUrl, KontakIjans, CurrentUser } from "../../api";
 import { nivoKonfyans } from "../../categories";
 
 function KontakIjansEditor() {
@@ -131,6 +131,67 @@ function BliyeModPas({ onFini }: { onFini: () => void }) {
   );
 }
 
+function FotoPwofilEditor({ user, onChanje }: { user: CurrentUser; onChanje: (u: CurrentUser) => void }) {
+  const [enChaje, setEnChaje] = useState(false);
+  const [erè, setErè] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function chwaziFichye(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichye = e.target.files?.[0];
+    if (!fichye) return;
+    if (!fichye.type.startsWith("image/")) {
+      setErè("Chwazi yon imaj (JPEG, PNG, WEBP, GIF).");
+      return;
+    }
+    setErè("");
+    setEnChaje(true);
+    try {
+      const { url } = await api.uploadFile(fichye);
+      const nouvoUser = await api.updateMe({ fotoPwofil: url });
+      updateSessionUser(nouvoUser);
+      onChanje(nouvoUser);
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setEnChaje(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div style={{ position: "relative", width: 76, height: 76, margin: "0 auto 12px" }}>
+      <div
+        style={{
+          width: 76, height: 76, borderRadius: "50%", overflow: "hidden",
+          background: "var(--surface-raised)", display: "flex", alignItems: "center",
+          justifyContent: "center", fontSize: 30, border: "1px solid var(--border)",
+        }}
+      >
+        {user.fotoPwofil ? (
+          <img src={mediaUrl(user.fotoPwofil)} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        ) : (
+          user.nom.slice(0, 1).toUpperCase()
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={enChaje}
+        style={{
+          position: "absolute", bottom: -2, right: -2, width: 28, height: 28, borderRadius: "50%",
+          background: "var(--official)", border: "2px solid var(--surface)", color: "white",
+          fontSize: 13, cursor: "pointer",
+        }}
+        title="Chanje foto pwofil"
+      >
+        {enChaje ? <span className="spinner" style={{ width: 12, height: 12 }} /> : "📷"}
+      </button>
+      <input ref={inputRef} type="file" accept="image/*" onChange={chwaziFichye} style={{ display: "none" }} />
+      {erè && <p style={{ fontSize: 11, color: "var(--urgent)", position: "absolute", top: 82, width: 200, left: "50%", transform: "translateX(-50%)" }}>{erè}</p>}
+    </div>
+  );
+}
+
 export default function Kont() {
   const navigate = useNavigate();
   const [user, setUser] = useState(getSessionUser());
@@ -183,15 +244,7 @@ export default function Kont() {
         {user ? (
           <>
             <div className="card" style={{ textAlign: "center", padding: "26px 16px" }}>
-              <div
-                style={{
-                  width: 64, height: 64, borderRadius: "50%", margin: "0 auto 12px",
-                  background: "var(--surface-raised)", display: "flex", alignItems: "center",
-                  justifyContent: "center", fontSize: 26, border: "1px solid var(--border)",
-                }}
-              >
-                {user.nom.slice(0, 1).toUpperCase()}
-              </div>
+              <FotoPwofilEditor user={user} onChanje={setUser} />
               <h2 style={{ fontSize: 18 }}>{user.nom}</h2>
               <p style={{ color: "var(--text-muted)", fontSize: 13.5, margin: "4px 0 0" }}>{user.telefon}</p>
               <div style={{ marginTop: 10, display: "inline-flex", alignItems: "center", gap: 6, background: "var(--surface-raised)", padding: "6px 12px", borderRadius: 20, fontSize: 12.5 }}>

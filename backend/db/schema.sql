@@ -267,3 +267,7 @@ CREATE TABLE IF NOT EXISTS alèt_meteyo (
   kreye_nan     timestamptz NOT NULL DEFAULT now(),
   mizajou_nan   timestamptz NOT NULL DEFAULT now()
 );
+
+-- Foto pwofil itilizatè a (URL relatif, egzanp "/uploads/xxx.jpg") — reyitilize
+-- menm sistèm telechajman/estokaj foto rapò yo deja itilize.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS foto_pwofil text;
