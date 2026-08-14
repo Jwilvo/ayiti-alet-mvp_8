@@ -167,14 +167,18 @@ npm run dev          # http://localhost:5173
   itilizatè (pa sèlman moun ki toupre). Konfime fonksyonèl an dirèk sou Render (rezo
   sandbox devlopman an te limite pou tès lokal, men lojik la te teste ak done ki iminen
   menm fòma a anvan deplwaman).
-- ✅ **Sèvis Piblik Sèlman, Klase pa Pwoksimite**: lis "Sèvis" la kounye a gen **sèlman vrè
-  enstitisyon piblik** (retire tout biznis prive — famasi, estasyon gaz), ak adrès/telefòn
-  **verifye pa rechèch** (PNH, DCPJ, DGI, Pwoteksyon Sivil, lopital inivèsitè, mairi), ki
-  kouvri **12 komin diferan** (te 5 anvan, tout nan menm zòn Pòtoprens). Lis la klase
-  otomatikman pa distans ak pozisyon itilizatè a — pi pre a parèt an premye. **Nòt onèt**:
-  chan "direktè/chèf enstitisyon" la **eksprè kite vid** nan seed done a — non moun sa yo
-  chanje twò souvan (nominasyon politik) pou nou ta ka garanti presizyon pou 140 komin;
-  se yon chan admin ka ranpli lè gen konfimasyon reyèl.
+- ✅ **Sèvis Piblik Sèlman, Filtre pa Pozisyon**: lis "Sèvis" la kounye a gen **sèlman vrè
+  enstitisyon piblik** (retire tout biznis prive), **35 kote** verifye pa rechèch, ki kouvri
+  **12 komin diferan**: PNH, DCPJ, DGI (9 komin), Pwoteksyon Sivil (6 komin), **9 Delegasyon
+  Depatmantal** (tout depatman sof Lwès, ki se syèj gouvènman santral la), lopital inivèsitè,
+  mairi, ayewopò. Lis la **filtre** (pa jis triye) pa distans — si w Okap, sèvis Pòtoprens
+  pa parèt ditou (opsyon "Wè tout peyi a" rete disponib si pa gen anyen toupre w). **Nòt
+  onèt sou limit yo**: (1) chan "direktè/chèf enstitisyon" eksprè vid — chanje twò souvan
+  pou nou ta ka verifye pou 140 komin; (2) **Ministè yo pa enkli ditou** — rechèch mwen fè
+  jwenn yo **aktivman ap demenaje** akoz vyolans gang nan Pòtoprens, kidonk yon adrès fiks
+  ta ka danjere si li pa ajou; (3) Vis-delegasyon, Dwan, ONI, Imigrasyon, Tribinal, ak
+  kouvèti Sant Sante/Komisarya pou tout 140 komin yo **mande plis rechèch** pase sa mwen te
+  ka fè ak konfyans nan sesyon sa a — yo pa enkli pou kounye a olye envante done.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

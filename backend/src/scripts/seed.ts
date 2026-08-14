@@ -42,6 +42,19 @@ const PLACES: [string, string, string | null, string, string, number, number, st
   ["DGI — Miragwàn", "administrasyon", "dgi", "Ri Alexandre Pétion, devan BNC, Miragwàn", "2262-1000", 18.4480, -73.0920, "Miragwàn"],
   ["DGI — Kayes", "administrasyon", "dgi", "14, Ri Kè a, Kayes", "2262-1000", 18.2000, -73.7500, "Okay"],
 
+  // ===== Delegasyon Depatmantal (9 — Lwès/Pòtoprens pa genyen paske se la
+  // pouvwa santral la ye) — pozisyon konfime nan chèf-lye chak depatman, san
+  // nou pa envante yon adrès ri presi nou pa ka verifye =====
+  ["Delegasyon Depatmantal — Nò", "administrasyon", "delegasyon", "Chèf-lye Depatman Nò, Okap", "", 19.7573, -72.2043, "Okap"],
+  ["Delegasyon Depatmantal — Nòdès", "administrasyon", "delegasyon", "Chèf-lye Depatman Nòdès, Fòlibète", "", 19.6640, -71.8400, "Fòlibète"],
+  ["Delegasyon Depatmantal — Nòdwès", "administrasyon", "delegasyon", "Chèf-lye Depatman Nòdwès, Pòdepè", "", 19.9400, -72.8380, "Pòdepè"],
+  ["Delegasyon Depatmantal — Latibonit", "administrasyon", "delegasyon", "Chèf-lye Depatman Latibonit, Gonayiv", "", 19.4460, -72.6880, "Gonayiv"],
+  ["Delegasyon Depatmantal — Sant", "administrasyon", "delegasyon", "Chèf-lye Depatman Sant, Ench", "", 19.1500, -72.0100, "Ench"],
+  ["Delegasyon Depatmantal — Sid", "administrasyon", "delegasyon", "Chèf-lye Depatman Sid, Okay", "", 18.2000, -73.7500, "Okay"],
+  ["Delegasyon Depatmantal — Sidès", "administrasyon", "delegasyon", "Chèf-lye Depatman Sidès, Jakmèl", "", 18.2340, -72.5350, "Jakmèl"],
+  ["Delegasyon Depatmantal — Grandans", "administrasyon", "delegasyon", "Chèf-lye Depatman Grandans, Jeremi", "", 18.6430, -74.1150, "Jeremi"],
+  ["Delegasyon Depatmantal — Nip", "administrasyon", "delegasyon", "Chèf-lye Depatman Nip, Miragwàn", "", 18.4480, -73.0920, "Miragwàn"],
+
   // ===== Transpò =====
   ["Ayewopò Tousen Louvèti", "transpò", "ayewopò", "Tabak, Pòtoprens", "", 18.5800, -72.2925, "Pòtoprens"],
 ];

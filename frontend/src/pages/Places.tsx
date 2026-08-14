@@ -6,6 +6,8 @@ import { t } from "../i18n";
 import { useLangVèsyon, useUserPosition } from "../hooks";
 import { distansKm } from "../categories";
 
+const REYON_TOUPRE_KM = 100; // apwoksimatif gwosè yon depatman
+
 const KATEGORI = [
   { key: "", kle: "sèvis.tout", emoji: "📍" },
   { key: "sante", kle: "sèvis.sante", emoji: "🏥" },
@@ -20,6 +22,7 @@ export default function Places() {
   const [q, setQ] = useState("");
   const [places, setPlaces] = useState<Place[] | null>(null);
   const [erè, setErè] = useState("");
+  const [wèTout, setWèTout] = useState(false);
   const pozisyon = useUserPosition(); // otomatik, san bouton — gade hooks.ts
 
   useEffect(() => {
@@ -33,17 +36,14 @@ export default function Places() {
     return () => clearTimeout(timeout);
   }, [kategori, q]);
 
-  // Klase pa distans (pi pre an premye) selon pozisyon itilizatè a — konsa
-  // sèvis nan komin ki pi pre yo parèt an premye, san yo pa bezwen chwazi
-  // okenn komin manyèlman.
-  const placesKlase = places
-    ? [...places].sort((a, b) => {
-        if (!pozisyon) return 0;
-        const dA = distansKm(pozisyon.lat, pozisyon.lng, a.latitude, a.longitude);
-        const dB = distansKm(pozisyon.lat, pozisyon.lng, b.latitude, b.longitude);
-        return dA - dB;
-      })
-    : null;
+  const placesAkDistans = (places ?? []).map((p) => ({
+    plas: p,
+    dist: pozisyon ? distansKm(pozisyon.lat, pozisyon.lng, p.latitude, p.longitude) : null,
+  }));
+
+  const toupre = placesAkDistans.filter((p) => p.dist === null || p.dist <= REYON_TOUPRE_KM);
+  const montreTout = wèTout || !pozisyon || toupre.length === 0;
+  const placesKlase = [...(montreTout ? placesAkDistans : toupre)].sort((a, b) => (a.dist ?? 0) - (b.dist ?? 0));
 
   return (
     <>
@@ -51,7 +51,9 @@ export default function Places() {
       <div className="screen">
         <h1 style={{ fontSize: 20 }}>{t("sèvis.tit")}</h1>
         <p style={{ color: "var(--text-muted)", fontSize: 12.5, marginTop: -4, marginBottom: 12 }}>
-          Sèlman enstitisyon piblik, klase pa pwoksimite ak pozisyon w.
+          {montreTout
+            ? "Sèlman enstitisyon piblik, tout peyi a."
+            : `Sèlman enstitisyon piblik nan ${REYON_TOUPRE_KM}km de ou.`}
         </p>
         <input placeholder={t("sèvis.chèche")} value={q} onChange={(e) => setQ(e.target.value)} />
 
@@ -75,11 +77,30 @@ export default function Places() {
         </div>
 
         {erè && <div className="banner banner-error">{erè}</div>}
-        {!placesKlase && !erè && <p className="empty">{t("sèvis.ap_chèche")}</p>}
-        {placesKlase && placesKlase.length === 0 && <p className="empty">{t("sèvis.pa_jwenn")}</p>}
+        {!places && !erè && <p className="empty">{t("sèvis.ap_chèche")}</p>}
+        {places && placesKlase.length === 0 && <p className="empty">{t("sèvis.pa_jwenn")}</p>}
 
-        {placesKlase?.map((p) => {
-          const dist = pozisyon ? distansKm(pozisyon.lat, pozisyon.lng, p.latitude, p.longitude) : null;
+        {places && toupre.length === 0 && pozisyon && (
+          <div className="banner" style={{ background: "var(--surface-raised)", borderColor: "var(--border)" }}>
+            <strong style={{ fontSize: 13 }}>Pa gen sèvis piblik nan {REYON_TOUPRE_KM}km de ou kounye a.</strong>
+            <p style={{ fontSize: 12, margin: "4px 0 0", color: "var(--text-muted)" }}>
+              Men lis sa a montre sèvis ki pi pre ou yo, kèlkeswa distans.
+            </p>
+          </div>
+        )}
+
+        {!montreTout && toupre.length > 0 && (
+          <button className="btn btn-ghost btn-block" onClick={() => setWèTout(true)} style={{ marginBottom: 14 }}>
+            Wè sèvis nan tout peyi a tou
+          </button>
+        )}
+        {wèTout && (
+          <button className="btn btn-ghost btn-block" onClick={() => setWèTout(false)} style={{ marginBottom: 14 }}>
+            Retounen sou sèvis ki toupre m sèlman
+          </button>
+        )}
+
+        {placesKlase.map(({ plas: p, dist }) => {
           return (
             <div key={p.id} className="card">
               <div className="place-row">
