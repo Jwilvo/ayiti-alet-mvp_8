@@ -32,11 +32,14 @@ export default function Home() {
     api.ijansAktif(pozisyon.lat, pozisyon.lng).then(setIjansAktif).catch(() => {});
   }, [pozisyon]);
 
-  async function makAnSekirite(id: string) {
+  const [ijansRepònKategori, setIjansRepònKategori] = useState<Record<string, boolean>>({});
+
+  async function makAnSekirite(id: string, anSekirite: boolean) {
     setIjansAnKou(true);
     try {
-      await api.ijansAnSekirite(id);
+      await api.ijansAnSekirite(id, anSekirite);
       setIjansRepondi((s) => new Set(s).add(id));
+      setIjansRepònKategori((k) => ({ ...k, [id]: anSekirite }));
     } catch {
       // silans — moun nan ka eseye ankò
     } finally {
@@ -106,20 +109,37 @@ export default function Home() {
             {ijans.deskripsyon && (
               <p style={{ fontSize: 12, margin: "4px 0 8px", color: "var(--text-muted)" }}>{ijans.deskripsyon}</p>
             )}
-            <button
-              className="btn btn-primary btn-block"
-              style={{ padding: "9px 10px", fontSize: 12.5 }}
-              onClick={() => makAnSekirite(ijans.id)}
-              disabled={ijansAnKou}
-            >
-              {ijansAnKou ? <span className="spinner" /> : "✔ Mwen An Sekirite"}
-            </button>
+            <p style={{ fontSize: 11.5, margin: "0 0 8px", color: "var(--text-muted)" }}>Èske w an sekirite?</p>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                className="btn btn-primary"
+                style={{ flex: 1, padding: "9px 10px", fontSize: 12.5 }}
+                onClick={() => makAnSekirite(ijans.id, true)}
+                disabled={ijansAnKou}
+              >
+                {ijansAnKou ? <span className="spinner" /> : "✔ Wi, mwen bon"}
+              </button>
+              <button
+                className="btn btn-urgent"
+                style={{ flex: 1, padding: "9px 10px", fontSize: 12.5 }}
+                onClick={() => makAnSekirite(ijans.id, false)}
+                disabled={ijansAnKou}
+              >
+                {ijansAnKou ? <span className="spinner" /> : "✖ Non, m bezwen èd"}
+              </button>
+            </div>
           </div>
         ))}
 
         {ijansAktif.some((i) => ijansRepondi.has(i.id)) && !activeSos && (
-          <div className="map-flotan-banner" style={{ borderColor: "var(--calm)" }}>
-            <strong style={{ color: "var(--calm)", fontSize: 13 }}>✔ Nou avize kontak ou yo — ou an sekirite.</strong>
+          <div className="map-flotan-banner" style={{ borderColor: ijansAktif.some((i) => ijansRepònKategori[i.id] === false) ? "var(--urgent)" : "var(--calm)" }}>
+            {ijansAktif.some((i) => ijansRepònKategori[i.id] === false) ? (
+              <strong style={{ color: "var(--urgent)", fontSize: 13 }}>
+                Nou anrejistre repons ou — otorite yo ap wè ou bezwen èd.
+              </strong>
+            ) : (
+              <strong style={{ color: "var(--calm)", fontSize: 13 }}>✔ Repons ou anrejistre — ou an sekirite.</strong>
+            )}
           </div>
         )}
 

@@ -158,8 +158,12 @@ npm run dev          # http://localhost:5173
   an, dekonfime nan lis piblik la.
 - ✅ **"Mwen An Sekirite" pandan Gwo Katastwòf**: admin ka deklare yon ijans (tit, sant
   jewografik, reyon) nan Panèl Admin. Tout itilizatè nan reyon a resevwa yon notifikasyon
-  push, e yon sèl klik "✔ Mwen An Sekirite" voye yon SMS otomatik bay kontak ijans yo.
-  Teste an dirèk konplè: deklarasyon → deteksyon pwoksimite → SMS otomatik → konte admin.
+  push, e yon sèl klik "✔ Mwen An Sekirite" anrejistre repons yo. **Tout rete anndan Ayiti
+  Alèt. Tout rete anndan Ayiti Alèt** — pa gen SMS ki voye bay kontak pèsonèl. Olye de sa,
+  Panèl Admin gen yon **rapò kategorize an TWA gwoup** ("Wè rapò detaye"): **✔ An sekirite**
+  ("Wi, mwen bon"), **🆘 Bezwen èd** ("Non, m bezwen èd" — sa a pi kritik pase silans), ak
+  **⚠ Poko reponn** (silans total). Teste an dirèk soti a-z ak twa itilizatè diferan (youn
+  chak kategori) — rapò a klase yo tout kòrèkteman.
 - ✅ **Alèt Meteyo Ofisyèl (NOAA/NHC)**: yon "worker" background tcheke
   `CurrentStorms.json` NOAA a (API JSON gratis, san kle) chak 30 minit, kalkile distans
   ant chak tanpèt aktif ak Ayiti, e kreye yon "alèt ofisyèl" (ak badj distenk "OFISYÈL —

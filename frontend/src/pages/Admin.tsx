@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactNode } from "react";
-import { api, AdminStats, AdminTandans, DuplicateGroup, Report, IjansAdmin, getSessionUser, saveSession, clearSession } from "../api";
+import { api, AdminStats, AdminTandans, DuplicateGroup, Report, IjansAdmin, IjansRapò, getSessionUser, saveSession, clearSession } from "../api";
 import { categoryMeta, timeAgo, severityColor } from "../categories";
 import IncidentMap from "../components/IncidentMap";
 
@@ -79,6 +79,9 @@ function IjansPanel() {
   const [reyonKm, setReyonKm] = useState(50);
   const [chaje, setChaje] = useState(false);
   const [erè, setErè] = useState("");
+  const [rapòOuvri, setRapòOuvri] = useState<string | null>(null);
+  const [rapòDone, setRapòDone] = useState<IjansRapò | null>(null);
+  const [rapòChaje, setRapòChaje] = useState(false);
 
   function chajeLis() {
     api.adminListIjans().then(setLis).catch((e) => setErè(e.message));
@@ -111,6 +114,24 @@ function IjansPanel() {
     chajeLis();
   }
 
+  async function wèRapò(id: string) {
+    if (rapòOuvri === id) {
+      setRapòOuvri(null);
+      return;
+    }
+    setRapòOuvri(id);
+    setRapòDone(null);
+    setRapòChaje(true);
+    try {
+      const d = await api.ijansRapò(id);
+      setRapòDone(d);
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setRapòChaje(false);
+    }
+  }
+
   return (
     <>
       <div className="section-title"><h2>🆘 Ijans deklare</h2></div>
@@ -118,14 +139,77 @@ function IjansPanel() {
       {erè && <div className="banner banner-error">{erè}</div>}
 
       {lis?.filter((i) => i.aktif).map((i) => (
-        <div key={i.id} className="card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <strong style={{ fontSize: 14 }}>{i.tit}</strong>
-            <div className="report-meta">{i.reyonKm}km · {i.konteAnSekirite} moun make "an sekirite"</div>
+        <div key={i.id} className="card">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <strong style={{ fontSize: 14 }}>{i.tit}</strong>
+              <div className="report-meta">
+                {i.reyonKm}km · {i.konteAnSekirite}/{i.konteNotifye} an sekirite
+                {i.konteBezwenÈd > 0 && (
+                  <span style={{ color: "var(--urgent)", fontWeight: 700 }}> · {i.konteBezwenÈd} bezwen èd 🆘</span>
+                )}
+              </div>
+            </div>
+            <button className="btn btn-ghost" style={{ padding: "7px 10px", fontSize: 12 }} onClick={() => dezaktive(i.id)}>
+              Dezaktive
+            </button>
           </div>
-          <button className="btn btn-ghost" style={{ padding: "7px 10px", fontSize: 12 }} onClick={() => dezaktive(i.id)}>
-            Dezaktive
+          <button
+            className="btn btn-ghost btn-block"
+            style={{ marginTop: 10, padding: "7px 10px", fontSize: 12.5 }}
+            onClick={() => wèRapò(i.id)}
+          >
+            {rapòOuvri === i.id ? "▲ Kache rapò a" : "▼ Wè rapò detaye"}
           </button>
+
+          {rapòOuvri === i.id && (
+            <div style={{ marginTop: 10, borderTop: "1px solid var(--border)", paddingTop: 10 }}>
+              {rapòChaje && <p className="empty" style={{ padding: 0 }}>Ap chaje rapò a…</p>}
+              {rapòDone && (
+                <>
+                  <div style={{ marginBottom: 10 }}>
+                    <strong style={{ fontSize: 12.5, color: "var(--calm)" }}>
+                      ✔ An sekirite ({rapòDone.anSekirite.length})
+                    </strong>
+                    {rapòDone.anSekirite.length === 0 && (
+                      <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "4px 0 0" }}>Pèsonn poko reponn.</p>
+                    )}
+                    {rapòDone.anSekirite.map((m) => (
+                      <div key={m.userId} style={{ fontSize: 12.5, padding: "4px 0" }}>
+                        {m.nom} — {m.telefon}
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginBottom: 10 }}>
+                    <strong style={{ fontSize: 12.5, color: "var(--urgent)" }}>
+                      🆘 Bezwen èd ({rapòDone.bezwenÈd.length})
+                    </strong>
+                    {rapòDone.bezwenÈd.length === 0 && (
+                      <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "4px 0 0" }}>Pèsonn pa siyale yo bezwen èd.</p>
+                    )}
+                    {rapòDone.bezwenÈd.map((m) => (
+                      <div key={m.userId} style={{ fontSize: 12.5, padding: "4px 0", color: "var(--urgent)", fontWeight: 600 }}>
+                        {m.nom} — {m.telefon}
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <strong style={{ fontSize: 12.5, color: "var(--amber)" }}>
+                      ⚠ Poko reponn ({rapòDone.pokoReponn.length})
+                    </strong>
+                    {rapòDone.pokoReponn.length === 0 && (
+                      <p style={{ fontSize: 12, color: "var(--text-muted)", margin: "4px 0 0" }}>Tout moun reponn ✔</p>
+                    )}
+                    {rapòDone.pokoReponn.map((m) => (
+                      <div key={m.userId} style={{ fontSize: 12.5, padding: "4px 0" }}>
+                        {m.nom} — {m.telefon}
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
         </div>
       ))}
 

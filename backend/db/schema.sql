@@ -250,6 +250,23 @@ CREATE TABLE IF NOT EXISTS ijans_repons (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   ijans_id    uuid NOT NULL REFERENCES ijans_deklare(id) ON DELETE CASCADE,
   user_id     uuid NOT NULL REFERENCES users(id),
+  an_sekirite boolean NOT NULL DEFAULT true, -- true="wi, an sekirite", false="non, bezwen èd"
+  kreye_nan   timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (ijans_id, user_id)
+);
+
+-- Si tab la te deja egziste (soti nan yon ansyen deplwaman), ajoute kolòn nan
+-- eksplisitman pou schema.sql rete "idempotan".
+ALTER TABLE ijans_repons ADD COLUMN IF NOT EXISTS an_sekirite boolean NOT NULL DEFAULT true;
+
+-- "Foto" moun ki te nan zòn nan lè ijans lan te deklare — sèvi pou konstwi
+-- yon rapò ki montre kiyès ki reponn ("an sekirite") vs kiyès ki POKO reponn
+-- (enfòmasyon ki pi kritik pandan yon vrè ijans). Sa ranplase mekanis SMS
+-- otomatik bay kontak pèsonèl — tout rete anndan Ayiti Alèt.
+CREATE TABLE IF NOT EXISTS ijans_notifye (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  ijans_id    uuid NOT NULL REFERENCES ijans_deklare(id) ON DELETE CASCADE,
+  user_id     uuid NOT NULL REFERENCES users(id),
   kreye_nan   timestamptz NOT NULL DEFAULT now(),
   UNIQUE (ijans_id, user_id)
 );

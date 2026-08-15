@@ -45,7 +45,9 @@ export interface CurrentUser { id: string; nom: string; telefon: string; komin?:
 
 export interface LyeItilizatè { id: string; non: string; latitude: number; longitude: number; kreyeNan: string; }
 export interface IjansDeklare { id: string; tit: string; deskripsyon?: string; reyonKm: number; kreyeNan: string; }
-export interface IjansAdmin extends IjansDeklare { aktif: boolean; konteAnSekirite: number; }
+export interface IjansAdmin extends IjansDeklare { aktif: boolean; konteNotifye: number; konteAnSekirite: number; konteBezwenÈd: number; }
+export interface IjansRapòMoun { userId: string; nom: string; telefon: string; kreyeNan?: string; }
+export interface IjansRapò { anSekirite: IjansRapòMoun[]; bezwenÈd: IjansRapòMoun[]; pokoReponn: IjansRapòMoun[]; }
 export interface AletMeteyo { id: string; non: string; tip: string; entansiteKt?: number; lyenOfisyèl?: string; distansKm: number; kreyeNan: string; mizajouNan: string; }
 
 export interface AdminTandans {
@@ -201,11 +203,13 @@ export const api = {
 
   ijansAktif: (lat: number, lng: number) =>
     request<IjansDeklare[]>(`/ijans/aktif?lat=${lat}&lng=${lng}`),
-  ijansAnSekirite: (id: string) => request<{ ok: boolean }>(`/ijans/${id}/an-sekirite`, { method: "POST" }),
+  ijansAnSekirite: (id: string, anSekirite: boolean) =>
+    request<{ ok: boolean }>(`/ijans/${id}/an-sekirite`, { method: "POST", body: JSON.stringify({ anSekirite }) }),
   adminDeklareIjans: (body: { tit: string; deskripsyon?: string; latitude: number; longitude: number; reyonKm: number }) =>
     request<IjansDeklare>("/ijans", { method: "POST", body: JSON.stringify(body) }),
   adminListIjans: () => request<IjansAdmin[]>("/ijans/admin/tout"),
   adminDezaktiveIjans: (id: string) => request<{ ok: boolean }>(`/ijans/${id}/dezaktive`, { method: "PATCH" }),
+  ijansRapò: (id: string) => request<IjansRapò>(`/ijans/${id}/rapo`),
 
   aletMeteyoAktif: () => request<AletMeteyo[]>("/alet-meteyo/aktif"),
 
