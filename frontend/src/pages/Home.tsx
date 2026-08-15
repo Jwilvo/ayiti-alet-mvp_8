@@ -8,6 +8,7 @@ import { useActiveSos, useUserPosition, useLangVèsyon } from "../hooks";
 import { deklancheSos, fèmenSos, lyenSwiv, mesajSmsTouKontak, mesajWhatsAppSos } from "../sos";
 import { categoryMeta, severityColor, distansKm, nivoPètinans } from "../categories";
 import { t } from "../i18n";
+import { ijansDejaReponn, markeIjansReponn } from "../ijansLokal";
 
 const PÒTOPRENS_CENTER: [number, number] = [18.5392, -72.3364];
 
@@ -19,6 +20,9 @@ export default function Home() {
   const [ijansAktif, setIjansAktif] = useState<IjansDeklare[]>([]);
   const [ijansRepondi, setIjansRepondi] = useState<Set<string>>(new Set());
   const [ijansAnKou, setIjansAnKou] = useState(false);
+  // Chwa moun nan fè men li POKO konfime — mande "Ou asirè?" anvan anrejistre
+  // final la, pou evite tap aksidantèl.
+  const [ijansPandanKonfimasyon, setIjansPandanKonfimasyon] = useState<{ id: string; anSekirite: boolean } | null>(null);
   const navigate = useNavigate();
   const activeSos = useActiveSos();
   const pozisyon = useUserPosition(); // otomatik, san bouton — gade hooks.ts
@@ -29,17 +33,33 @@ export default function Home() {
 
   useEffect(() => {
     if (!pozisyon) return;
-    api.ijansAktif(pozisyon.lat, pozisyon.lng).then(setIjansAktif).catch(() => {});
+    api.ijansAktif(pozisyon.lat, pozisyon.lng).then((lis) => {
+      setIjansAktif(lis);
+      // Chaje eta "deja reponn" pèmanan an (localStorage) — konsa bandwo a
+      // pa janm parèt ankò yon fwa moun nan fin reponn, menm apre yon rechaje.
+      const dejaReponn = lis.filter((i) => ijansDejaReponn(i.id)).map((i) => i.id);
+      if (dejaReponn.length > 0) {
+        setIjansRepondi((s) => new Set([...s, ...dejaReponn]));
+      }
+    }).catch(() => {});
   }, [pozisyon]);
 
   const [ijansRepònKategori, setIjansRepònKategori] = useState<Record<string, boolean>>({});
 
-  async function makAnSekirite(id: string, anSekirite: boolean) {
+  function mandeKonfimasyon(id: string, anSekirite: boolean) {
+    setIjansPandanKonfimasyon({ id, anSekirite });
+  }
+
+  async function konfimeRepons() {
+    if (!ijansPandanKonfimasyon) return;
+    const { id, anSekirite } = ijansPandanKonfimasyon;
     setIjansAnKou(true);
     try {
       await api.ijansAnSekirite(id, anSekirite);
+      markeIjansReponn(id); // sove pèmanan — pa janm mande ankò sou aparèy sa a
       setIjansRepondi((s) => new Set(s).add(id));
       setIjansRepònKategori((k) => ({ ...k, [id]: anSekirite }));
+      setIjansPandanKonfimasyon(null);
     } catch {
       // silans — moun nan ka eseye ankò
     } finally {
@@ -105,29 +125,58 @@ export default function Home() {
 
         {!activeSos && ijansAktif.filter((i) => !ijansRepondi.has(i.id)).map((ijans) => (
           <div key={ijans.id} className="map-flotan-banner" style={{ borderColor: "var(--amber)" }}>
-            <strong style={{ color: "var(--amber)", fontSize: 13 }}>🆘 Ijans deklare: {ijans.tit}</strong>
-            {ijans.deskripsyon && (
-              <p style={{ fontSize: 12, margin: "4px 0 8px", color: "var(--text-muted)" }}>{ijans.deskripsyon}</p>
+            {ijansPandanKonfimasyon?.id === ijans.id ? (
+              <>
+                <strong style={{ fontSize: 13, color: ijansPandanKonfimasyon.anSekirite ? "var(--calm)" : "var(--urgent)" }}>
+                  {ijansPandanKonfimasyon.anSekirite ? "Ou asirè ou an sekirite?" : "Ou asirè ou bezwen èd?"}
+                </strong>
+                <p style={{ fontSize: 11.5, margin: "4px 0 8px", color: "var(--text-muted)" }}>
+                  Repons sa a **final** — ou p ap ka chanje l apre.
+                </p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    className="btn btn-ghost"
+                    style={{ flex: 1, padding: "9px 10px", fontSize: 12.5 }}
+                    onClick={() => setIjansPandanKonfimasyon(null)}
+                    disabled={ijansAnKou}
+                  >
+                    Anile
+                  </button>
+                  <button
+                    className={ijansPandanKonfimasyon.anSekirite ? "btn btn-primary" : "btn btn-urgent"}
+                    style={{ flex: 1, padding: "9px 10px", fontSize: 12.5 }}
+                    onClick={konfimeRepons}
+                    disabled={ijansAnKou}
+                  >
+                    {ijansAnKou ? <span className="spinner" /> : "Konfime"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <strong style={{ color: "var(--amber)", fontSize: 13 }}>🆘 Ijans deklare: {ijans.tit}</strong>
+                {ijans.deskripsyon && (
+                  <p style={{ fontSize: 12, margin: "4px 0 8px", color: "var(--text-muted)" }}>{ijans.deskripsyon}</p>
+                )}
+                <p style={{ fontSize: 11.5, margin: "0 0 8px", color: "var(--text-muted)" }}>Èske w an sekirite?</p>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    className="btn btn-primary"
+                    style={{ flex: 1, padding: "9px 10px", fontSize: 12.5 }}
+                    onClick={() => mandeKonfimasyon(ijans.id, true)}
+                  >
+                    ✔ Wi, mwen bon
+                  </button>
+                  <button
+                    className="btn btn-urgent"
+                    style={{ flex: 1, padding: "9px 10px", fontSize: 12.5 }}
+                    onClick={() => mandeKonfimasyon(ijans.id, false)}
+                  >
+                    ✖ Non, m bezwen èd
+                  </button>
+                </div>
+              </>
             )}
-            <p style={{ fontSize: 11.5, margin: "0 0 8px", color: "var(--text-muted)" }}>Èske w an sekirite?</p>
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                className="btn btn-primary"
-                style={{ flex: 1, padding: "9px 10px", fontSize: 12.5 }}
-                onClick={() => makAnSekirite(ijans.id, true)}
-                disabled={ijansAnKou}
-              >
-                {ijansAnKou ? <span className="spinner" /> : "✔ Wi, mwen bon"}
-              </button>
-              <button
-                className="btn btn-urgent"
-                style={{ flex: 1, padding: "9px 10px", fontSize: 12.5 }}
-                onClick={() => makAnSekirite(ijans.id, false)}
-                disabled={ijansAnKou}
-              >
-                {ijansAnKou ? <span className="spinner" /> : "✖ Non, m bezwen èd"}
-              </button>
-            </div>
           </div>
         ))}
 
