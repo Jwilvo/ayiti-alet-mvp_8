@@ -24,7 +24,11 @@ function jwennTransporteur(): nodemailer.Transporter | null {
       port: Number(port),
       secure: Number(port) === 465,
       auth: { user, pass },
-    });
+      // Anpil anviwònman ebèjman (tankou Render) gen pwoblèm koneksyon
+      // IPv6 sòti — Gmail SMTP retounen tou de adrès IPv4 AK IPv6, e Node
+      // ka eseye IPv6 an premye e echwe (ENETUNREACH). Fòse IPv4 rezoud sa.
+      family: 4,
+    } as any);
     return transporteur;
   } catch {
     return null;
