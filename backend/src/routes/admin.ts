@@ -188,3 +188,51 @@ router.get("/tandans", async (_req, res, next) => {
     next(e);
   }
 });
+
+// ============ Sipò: chèche/libere yon kont bloke ============
+// Lè yon moun pèdi aksè a imèl li (kidonk li pa ka reyajiste modpas), sèl
+// fason pou l ka kreye yon NOUVO kont ak yon lòt imèl se si admin "libere"
+// nimewo telefòn/dokiman idantite ansyen kont lan — san sa, restriksyon
+// "pa gen 2 kont ak menm telefòn/dokiman" ta bloke l pou tout tan.
+
+router.get("/itilizate/cheche", async (req, res, next) => {
+  const telefon = String(req.query.telefon || "");
+  if (!telefon) return res.status(400).json({ erè: "Bay yon nimewo telefòn pou chèche." });
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, nom, telefon, email, komin, katye, kreye_nan AS "kreyeNan",
+              (dokiman_ash IS NOT NULL) AS "genDokiman"
+       FROM users WHERE telefon = $1`,
+      [telefon]
+    );
+    if (!rows[0]) return res.status(404).json({ erè: "Pa gen okenn kont ak nimewo sa a." });
+    res.json(rows[0]);
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/itilizate/:id/libere", async (req, res, next) => {
+  try {
+    const { rows } = await pool.query("SELECT id, telefon FROM users WHERE id = $1", [req.params.id]);
+    if (!rows[0]) return res.status(404).json({ erè: "Kont sa a pa egziste." });
+
+    // Nou pa efase liy lan nèt (pou pa kraze referans nan rapò/kòmantè li
+    // te fè yo) — nou "anonimize" li: telefon orijinal la vin lib pou yon
+    // nouvo kont, dokiman ak imèl efase, modpas envalide nèt.
+    await pool.query(
+      `UPDATE users SET
+         telefon = 'efase_' || id || '_' || telefon,
+         email = NULL,
+         dokiman_ash = NULL,
+         dokiman_chifre = NULL,
+         mot_de_pass = 'KONT_EFASE_PA_KA_KONEKTE'
+       WHERE id = $1`,
+      [req.params.id]
+    );
+
+    res.json({ ok: true, mesaj: "Kont lan libere — nimewo telefòn ak dokiman idantite disponib pou yon nouvo kont." });
+  } catch (e) {
+    next(e);
+  }
+});

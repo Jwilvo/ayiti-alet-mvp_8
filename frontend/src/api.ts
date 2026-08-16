@@ -109,8 +109,8 @@ export const api = {
   health: () => request<{ statut: string }>("/health"),
 
   register: (body: {
-    nom: string; telefon: string; motDePasse: string; komin?: string; katye?: string;
-    email?: string; nonKonplè?: string; dokimanTip?: "NIF" | "CIN" | "Paspò"; dokimanNimewo?: string; adrèsKay?: string;
+    nom: string; telefon: string; motDePasse: string; email: string; komin?: string; katye?: string;
+    nonKonplè?: string; dokimanTip?: "NIF" | "CIN" | "Paspò"; dokimanNimewo?: string; adrèsKay?: string;
   }) =>
     request<{ token: string; user: CurrentUser }>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
 
@@ -210,6 +210,12 @@ export const api = {
   adminListIjans: () => request<IjansAdmin[]>("/ijans/admin/tout"),
   adminDezaktiveIjans: (id: string) => request<{ ok: boolean }>(`/ijans/${id}/dezaktive`, { method: "PATCH" }),
   ijansRapò: (id: string) => request<IjansRapò>(`/ijans/${id}/rapo`),
+
+  adminChècheItilizatè: (telefon: string) =>
+    request<{ id: string; nom: string; telefon: string; email: string | null; komin?: string; katye?: string; kreyeNan: string; genDokiman: boolean }>(
+      `/admin/itilizate/cheche?telefon=${encodeURIComponent(telefon)}`
+    ),
+  adminLibereItilizatè: (id: string) => request<{ ok: boolean; mesaj: string }>(`/admin/itilizate/${id}/libere`, { method: "POST" }),
 
   aletMeteyoAktif: () => request<AletMeteyo[]>("/alet-meteyo/aktif"),
 

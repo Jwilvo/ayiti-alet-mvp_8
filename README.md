@@ -190,6 +190,17 @@ npm run dev          # http://localhost:5173
 - ✅ **Mesaj konfimasyon otomatik jeneralize**: mesaj administrasyon an voye 1 minit apre
   yon rapò kounye a di sèlman "Nou ap transfere l bay **enstans konsène a**" — li **pa
   nonmen** ki otorite espesifik (PNH, Ponpye, elatriye) ap resevwa rapò a. Teste an dirèk.
+- ✅ **Imèl obligatwa + reyajisman modpas pa imèl**: enskripsyon mande yon imèl valid
+  kounye a (verifye inik tou). Reyajisman modpas voye kòd la **pa imèl** (`backend/src/email.ts`,
+  sipòte nenpòt founisè SMTP — Gmail, SendGrid, Mailgun — ak menm mekanis "degradasyon gras"
+  ak SMS/Firebase: si SMTP pa konfigire, kòd la ekri nan jounal sèvè a sèlman). Teste an
+  dirèk: enskripsyon san imèl rejte, ak imèl reyisi, kòd reyajisman parèt kòm "IMÈL-SIMILE".
+- ✅ **"Jesyon Kont" pou sipò (kont bloke)**: paske telefòn/dokiman idantite dwe rete inik
+  pa itilizatè, yon moun ki pèdi aksè a imèl li (kidonk li pa ka reyajiste modpas) ta ka
+  bloke nèt san yon fason pou "libere" ansyen kont li. Panèl Admin gen yon zouti "🔓 Jesyon
+  Kont": chèche yon kont pa telefòn, "libere" li (efase modpas/imèl/dokiman, telefòn orijinal
+  la vin lib) pou moun nan ka kreye yon **nouvo** kont ak yon lòt imèl. Teste an dirèk soti
+  a-z: chèche → libere → menm telefòn reyisi enskri yon nouvo kont.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

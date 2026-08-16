@@ -209,6 +209,10 @@ export default function Kont() {
   async function soumèt(e: React.FormEvent) {
     e.preventDefault();
     setErè("");
+    if (mòd === "register" && !email.trim()) {
+      setErè("Imèl obligatwa pou ka reyajiste modpas ou si w bliye l.");
+      return;
+    }
     setLoading(true);
     try {
       const res =
@@ -218,7 +222,7 @@ export default function Kont() {
               nom: nonKonplè,
               telefon,
               motDePasse,
-              email: email || undefined,
+              email,
               nonKonplè: nonKonplè || undefined,
               dokimanTip: dokimanTip || undefined,
               dokimanNimewo: dokimanNimewo || undefined,
@@ -258,7 +262,7 @@ export default function Kont() {
           <>
             <h1 style={{ fontSize: 20 }}>Reyajiste modpas</h1>
             <p style={{ color: "var(--text-muted)", fontSize: 13.5, marginTop: 0 }}>
-              Nou pral voye yon kòd 6 chif nan nimewo telefòn ou a pa SMS.
+              Nou pral voye yon kòd 6 chif nan adrès imèl ou a.
             </p>
             <BliyeModPas onFini={() => setMòd("login")} />
             <button className="btn btn-ghost btn-block" style={{ marginTop: 10 }} onClick={() => setMòd("login")}>
@@ -294,11 +298,14 @@ export default function Kont() {
                     </>
                   )}
 
+                  <label>Adrès imèl *</label>
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="egzanp@imel.com" />
+                  <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: -8 }}>
+                    Obligatwa — se sa nou itilize pou voye kòd reyajisman si w bliye modpas ou.
+                  </p>
+
                   <label>Adrès kay (opsyonèl)</label>
                   <input value={adrèsKay} onChange={(e) => setAdrèsKay(e.target.value)} placeholder="Egzanp: Ri Kapwa, Delmas 33" />
-
-                  <label>Adrès imèl (opsyonèl)</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="egzanp@imèl.com" />
                 </>
               )}
               <label>Nimewo telefòn</label>

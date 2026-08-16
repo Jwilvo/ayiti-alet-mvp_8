@@ -70,6 +70,99 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
   );
 }
 
+function JesyonKontPanel() {
+  const [telefon, setTelefon] = useState("");
+  const [chaje, setChaje] = useState(false);
+  const [erè, setErè] = useState("");
+  const [mesaj, setMesaj] = useState("");
+  const [itilizatè, setItilizatè] = useState<{ id: string; nom: string; telefon: string; email: string | null; kreyeNan: string; genDokiman: boolean } | null>(null);
+  const [libereAnKou, setLibereAnKou] = useState(false);
+  const [konfimasyon, setKonfimasyon] = useState(false);
+
+  async function chèche() {
+    if (!telefon.trim()) return;
+    setChaje(true);
+    setErè("");
+    setMesaj("");
+    setItilizatè(null);
+    setKonfimasyon(false);
+    try {
+      const res = await api.adminChècheItilizatè(telefon.trim());
+      setItilizatè(res);
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setChaje(false);
+    }
+  }
+
+  async function libere() {
+    if (!itilizatè) return;
+    setLibereAnKou(true);
+    try {
+      const res = await api.adminLibereItilizatè(itilizatè.id);
+      setMesaj(res.mesaj);
+      setItilizatè(null);
+      setKonfimasyon(false);
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setLibereAnKou(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="section-title"><h2>🔓 Jesyon Kont (Sipò)</h2></div>
+      <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: -6 }}>
+        Pou moun ki pèdi aksè a imèl yo e ki bloke — chèche kont yo pa telefòn, "libere"
+        nimewo telefòn/dokiman idantite a pou yo ka kreye yon nouvo kont ak yon lòt imèl.
+      </p>
+
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <input
+          placeholder="Nimewo telefòn"
+          value={telefon}
+          onChange={(e) => setTelefon(e.target.value)}
+          style={{ flex: 1, marginBottom: 0 }}
+        />
+        <button className="btn btn-primary" onClick={chèche} disabled={chaje} style={{ padding: "0 16px" }}>
+          {chaje ? <span className="spinner" /> : "Chèche"}
+        </button>
+      </div>
+
+      {erè && <div className="banner banner-error">{erè}</div>}
+      {mesaj && <div className="banner banner-ok">{mesaj}</div>}
+
+      {itilizatè && (
+        <div className="card">
+          <strong style={{ fontSize: 14 }}>{itilizatè.nom}</strong>
+          <div className="report-meta">{itilizatè.telefon} · {itilizatè.email || "pa gen imèl"}</div>
+          <div className="report-meta">Kreye: {new Date(itilizatè.kreyeNan).toLocaleDateString()} · {itilizatè.genDokiman ? "gen dokiman idantite" : "pa gen dokiman"}</div>
+
+          {!konfimasyon ? (
+            <button className="btn btn-urgent btn-block" style={{ marginTop: 10 }} onClick={() => setKonfimasyon(true)}>
+              🔓 Libere kont sa a
+            </button>
+          ) : (
+            <>
+              <p style={{ fontSize: 12.5, color: "var(--urgent)", margin: "10px 0 8px" }}>
+                Ou asirè? Sa efase modpas, imèl, ak dokiman idantite kont sa a nèt. Aksyon sa a PA ka defèt.
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setKonfimasyon(false)}>Anile</button>
+                <button className="btn btn-urgent" style={{ flex: 1 }} onClick={libere} disabled={libereAnKou}>
+                  {libereAnKou ? <span className="spinner" /> : "Konfime Libere"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
 function IjansPanel() {
   const [lis, setLis] = useState<IjansAdmin[] | null>(null);
   const [mòd, setMòd] = useState(false);
@@ -382,6 +475,8 @@ function Dashboard({ onOut }: { onOut: () => void }) {
             ))}
           </div>
         )}
+
+        <JesyonKontPanel />
 
         <IjansPanel />
 

@@ -5,7 +5,7 @@ import crypto from "crypto";
 import { z } from "zod";
 import { pool } from "../pg";
 import { AuthedRequest, JWT_SECRET, requireAuth } from "../middleware/auth";
-import { voyeSms } from "../sms";
+import { voyeImèl } from "../email";
 import { chifre, ashDokiman } from "../encryption";
 
 const router = Router();
@@ -22,7 +22,10 @@ const modPasSchema = z
 const registerSchema = z.object({
   nom: z.string().min(2, "Non konplè a dwe gen omwen 2 karaktè."),
   telefon: z.string().min(8, "Bay yon nimewo telefòn valid."),
-  email: z.string().email("Adrès imèl la pa valid.").optional().or(z.literal("")),
+  email: z
+    .string({ required_error: "Imèl obligatwa pou ka reyajiste modpas si w bliye l." })
+    .email("Adrès imèl la pa valid.")
+    .min(1, "Imèl obligatwa pou ka reyajiste modpas si w bliye l."),
   motDePasse: modPasSchema,
   komin: z.string().optional(),
   katye: z.string().optional(),
@@ -49,6 +52,11 @@ router.post("/register", async (req, res, next) => {
     const egziste = await pool.query("SELECT id FROM users WHERE telefon = $1", [telefon]);
     if (egziste.rows.length > 0) {
       return res.status(409).json({ erè: "Yon kont deja itilize nimewo telefòn sa a." });
+    }
+
+    const egzisteImèl = await pool.query("SELECT id FROM users WHERE email = $1", [email]);
+    if (egzisteImèl.rows.length > 0) {
+      return res.status(409).json({ erè: "Yon kont deja itilize adrès imèl sa a." });
     }
 
     let dokimanAsh: string | null = null;
@@ -197,13 +205,14 @@ router.post("/mande-reyajisman", async (req, res, next) => {
   if (!parsed.success) return res.status(400).json({ erè: "Bay yon nimewo telefòn valid." });
 
   try {
-    const { rows } = await pool.query("SELECT id FROM users WHERE telefon = $1", [parsed.data.telefon]);
+    const { rows } = await pool.query("SELECT id, email FROM users WHERE telefon = $1", [parsed.data.telefon]);
     // Repons lan menm si kont lan pa egziste — evite konfime/enfime yon
     // nimewo telefòn kòrèk pou moun ki ta eseye "devine" kont ki egziste.
     if (!rows[0]) {
-      return res.json({ ok: true, mesaj: "Si kont lan egziste, yon kòd voye pa SMS." });
+      return res.json({ ok: true, mesaj: "Si kont lan egziste, yon kòd voye nan imèl li." });
     }
     const userId = rows[0].id;
+    const email = rows[0].email;
 
     const kòd = Math.floor(100000 + Math.random() * 900000).toString();
     const kòdAsh = crypto.createHash("sha256").update(kòd).digest("hex");
@@ -214,12 +223,15 @@ router.post("/mande-reyajisman", async (req, res, next) => {
       [userId, kòdAsh, ekspireNan]
     );
 
-    await voyeSms(
-      parsed.data.telefon,
-      `Ayiti Alèt — Kòd pou reyajiste modpas ou a: ${kòd}. Li ekspire nan 10 minit.`
-    );
+    if (email) {
+      await voyeImèl(
+        email,
+        "Ayiti Alèt — Kòd Reyajisman Modpas",
+        `Kòd pou reyajiste modpas ou a: ${kòd}. Li ekspire nan 10 minit. Si se pa ou ki mande sa, inyore mesaj sa a.`
+      );
+    }
 
-    res.json({ ok: true, mesaj: "Si kont lan egziste, yon kòd voye pa SMS." });
+    res.json({ ok: true, mesaj: "Si kont lan egziste, yon kòd voye nan imèl li." });
   } catch (e) {
     next(e);
   }
