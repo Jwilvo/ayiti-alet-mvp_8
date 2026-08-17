@@ -70,6 +70,137 @@ function StatCard({ label, value }: { label: string; value: number | string }) {
   );
 }
 
+function OtoritePanel() {
+  const [lis, setLis] = useState<{ id: string; nom: string; telefon: string; wòl: string; zònResponsabilite: string | null; reyonMaksKm: number | null }[] | null>(null);
+  const [wòlEnfo, setWòlEnfo] = useState<Record<string, { label: string; reyonMaksKm: number | null; mandeZòn: boolean }> | null>(null);
+  const [erè, setErè] = useState("");
+  const [mesaj, setMesaj] = useState("");
+
+  const [telefonChèche, setTelefonChèche] = useState("");
+  const [itilizatèChèche, setItilizatèChèche] = useState<{ id: string; nom: string; telefon: string } | null>(null);
+  const [chaje, setChaje] = useState(false);
+  const [nouvoWòl, setNouvoWòl] = useState("kazèk");
+  const [nouvoZòn, setNouvoZòn] = useState("");
+  const [asiyeAnKou, setAsiyeAnKou] = useState(false);
+
+  function chajeLis() {
+    api.adminListOtorite().then(setLis).catch((e) => setErè(e.message));
+  }
+  useEffect(() => {
+    chajeLis();
+    api.adminOtoriteWòlEnfo().then(setWòlEnfo).catch(() => {});
+  }, []);
+
+  async function chèche() {
+    if (!telefonChèche.trim()) return;
+    setChaje(true);
+    setErè("");
+    setMesaj("");
+    setItilizatèChèche(null);
+    try {
+      const res = await api.adminChècheItilizatè(telefonChèche.trim());
+      setItilizatèChèche(res);
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setChaje(false);
+    }
+  }
+
+  async function asiye() {
+    if (!itilizatèChèche) return;
+    setAsiyeAnKou(true);
+    setErè("");
+    try {
+      await api.adminAsiyeWòl(itilizatèChèche.id, nouvoWòl, nouvoZòn || undefined);
+      setMesaj(`${itilizatèChèche.nom} kounye a "${wòlEnfo?.[nouvoWòl]?.label ?? nouvoWòl}".`);
+      setItilizatèChèche(null);
+      setTelefonChèche("");
+      setNouvoZòn("");
+      chajeLis();
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setAsiyeAnKou(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="section-title"><h2>🏛️ Jesyon Otorite</h2></div>
+      <p style={{ fontSize: 12.5, color: "var(--text-muted)", marginTop: -6 }}>
+        Wè ki moun genyen ki wòl enstitisyonèl, ki zòn yo responsab, ak limit reyon otomatik
+        pou chak wòl. Sèlman kont "admin" jeneral ka asiye wòl.
+      </p>
+
+      {wòlEnfo && (
+        <div className="card">
+          <strong style={{ fontSize: 13 }}>Limit reyon pa wòl</strong>
+          {Object.entries(wòlEnfo).filter(([k]) => k !== "sitwayen").map(([k, v]) => (
+            <div key={k} className="report-meta" style={{ marginTop: 4 }}>
+              {v.label}: {v.reyonMaksKm === null ? "nasyonal (san limit)" : `${v.reyonMaksKm}km maksimòm`}
+              {v.mandeZòn && " · mande yon zòn"}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {erè && <div className="banner banner-error">{erè}</div>}
+      {mesaj && <div className="banner banner-ok">{mesaj}</div>}
+
+      <div className="section-title"><h2 style={{ fontSize: 14 }}>Asiye yon wòl</h2></div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <input
+          placeholder="Nimewo telefòn"
+          value={telefonChèche}
+          onChange={(e) => setTelefonChèche(e.target.value)}
+          style={{ flex: 1, marginBottom: 0 }}
+        />
+        <button className="btn btn-primary" onClick={chèche} disabled={chaje} style={{ padding: "0 16px" }}>
+          {chaje ? <span className="spinner" /> : "Chèche"}
+        </button>
+      </div>
+
+      {itilizatèChèche && (
+        <div className="card">
+          <strong style={{ fontSize: 14 }}>{itilizatèChèche.nom}</strong>
+          <div className="report-meta">{itilizatèChèche.telefon}</div>
+
+          <label>Nouvo wòl</label>
+          <select value={nouvoWòl} onChange={(e) => setNouvoWòl(e.target.value)}>
+            {wòlEnfo && Object.entries(wòlEnfo).map(([k, v]) => (
+              <option key={k} value={k}>{v.label}</option>
+            ))}
+          </select>
+
+          {wòlEnfo?.[nouvoWòl]?.mandeZòn && (
+            <>
+              <label>Zòn responsabilite (egzanp non komin/seksyon kominal)</label>
+              <input value={nouvoZòn} onChange={(e) => setNouvoZòn(e.target.value)} placeholder="Egzanp: Ench, 3yèm Seksyon Kominal" />
+            </>
+          )}
+
+          <button className="btn btn-primary btn-block" onClick={asiye} disabled={asiyeAnKou} style={{ marginTop: 10 }}>
+            {asiyeAnKou ? <span className="spinner" /> : "Konfime asiyasyon"}
+          </button>
+        </div>
+      )}
+
+      <div className="section-title"><h2 style={{ fontSize: 14 }}>Tout otorite yo ({lis?.length ?? 0})</h2></div>
+      {lis?.map((u) => (
+        <div key={u.id} className="card">
+          <strong style={{ fontSize: 14 }}>{u.nom}</strong>
+          <div className="report-meta">
+            {u.telefon} · {wòlEnfo?.[u.wòl]?.label ?? u.wòl}
+            {u.reyonMaksKm !== null ? ` · ${u.reyonMaksKm}km` : " · nasyonal"}
+          </div>
+          {u.zònResponsabilite && <div className="report-meta">📍 {u.zònResponsabilite}</div>}
+        </div>
+      ))}
+    </>
+  );
+}
+
 function JesyonKontPanel() {
   const [telefon, setTelefon] = useState("");
   const [chaje, setChaje] = useState(false);
@@ -498,6 +629,8 @@ function Dashboard({ onOut }: { onOut: () => void }) {
             ))}
           </div>
         )}
+
+        <OtoritePanel />
 
         <JesyonKontPanel />
 

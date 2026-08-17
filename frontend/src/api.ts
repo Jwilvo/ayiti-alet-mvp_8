@@ -212,6 +212,17 @@ export const api = {
   ijansRapò: (id: string) => request<IjansRapò>(`/ijans/${id}/rapo`),
   ijansMwenWòl: () => request<{ wòl: string | null; kapabDeklare: boolean; reyonMaks: number | null }>("/ijans/mwen/wòl"),
 
+  adminOtoriteWòlEnfo: () => request<Record<string, { label: string; reyonMaksKm: number | null; mandeZòn: boolean }>>("/admin/otorite/wol-enfo"),
+  adminListOtorite: () =>
+    request<{ id: string; nom: string; telefon: string; wòl: string; zònResponsabilite: string | null; kreyeNan: string; reyonMaksKm: number | null }[]>(
+      "/admin/otorite"
+    ),
+  adminAsiyeWòl: (id: string, wòl: string, zònResponsabilite?: string) =>
+    request<{ id: string; nom: string; telefon: string; wòl: string; zònResponsabilite: string | null; reyonMaksKm: number | null }>(
+      `/admin/otorite/${id}`,
+      { method: "PATCH", body: JSON.stringify({ wòl, zònResponsabilite }) }
+    ),
+
   adminChècheItilizatè: (telefon: string) =>
     request<{ id: string; nom: string; telefon: string; email: string | null; komin?: string; katye?: string; kreyeNan: string; genDokiman: boolean }>(
       `/admin/itilizate/cheche?telefon=${encodeURIComponent(telefon)}`

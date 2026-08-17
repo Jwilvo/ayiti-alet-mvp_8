@@ -4,18 +4,9 @@ import { pool } from "../pg";
 import { AuthedRequest, requireAuth } from "../middleware/auth";
 import { voyeNotifikasyon } from "../firebase";
 
+import { WÒL_ENFO, WÒL_KAPAB_DEKLARE_IJANS, reyonMaksPouWòl } from "../wol";
+
 const router = Router();
-
-// Limit reyon (km) selon wòl enstitisyonèl la — sa reflete nivo otorite chak
-// wòl genyen nan Leta a. "null" vle di "nasyonal", san limit reyon.
-const REYON_MAKS_PA_WÒL: Record<string, number | null> = {
-  admin: 500,
-  prezidans: null, // nasyonal
-  delege: 150, // apeprè gwosè yon depatman
-  kazèk: 10, // seksyon kominal — 5-10km jan sa dekri nan estrikti a
-};
-
-const WÒL_KAPAB_DEKLARE = Object.keys(REYON_MAKS_PA_WÒL);
 
 async function jwennWòl(userId: string): Promise<string | null> {
   const { rows } = await pool.query("SELECT wol FROM users WHERE id = $1", [userId]);
@@ -79,7 +70,7 @@ const deklareSchema = z.object({
 
 router.post("/", requireAuth, async (req: AuthedRequest, res, next) => {
   const wòl = await jwennWòl(req.userId!);
-  if (!wòl || !WÒL_KAPAB_DEKLARE.includes(wòl)) {
+  if (!wòl || !WÒL_KAPAB_DEKLARE_IJANS.includes(wòl)) {
     return res.status(403).json({ erè: "Ou pa gen otorizasyon pou deklare yon ijans." });
   }
 
@@ -89,7 +80,7 @@ router.post("/", requireAuth, async (req: AuthedRequest, res, next) => {
 
   // Ranfòse limit reyon an selon wòl moun nan — egzanp yon "kazèk" pa ka
   // voye yon alèt ki kouvri tout peyi a, sèlman seksyon kominal li a (5-10km).
-  const reyonMaks = REYON_MAKS_PA_WÒL[wòl];
+  const reyonMaks = reyonMaksPouWòl(wòl);
   if (reyonMaks !== null && reyonKm > reyonMaks) {
     return res.status(403).json({
       erè: `Wòl ou (${wòl}) limite a yon reyon maksimòm ${reyonMaks}km. Sèlman "prezidans" ka voye alèt nasyonal.`,
@@ -116,7 +107,7 @@ router.post("/", requireAuth, async (req: AuthedRequest, res, next) => {
 router.get("/mwen/wòl", requireAuth, async (req: AuthedRequest, res, next) => {
   try {
     const wòl = await jwennWòl(req.userId!);
-    res.json({ wòl, kapabDeklare: !!wòl && WÒL_KAPAB_DEKLARE.includes(wòl), reyonMaks: wòl ? REYON_MAKS_PA_WÒL[wòl] : null });
+    res.json({ wòl, kapabDeklare: !!wòl && WÒL_KAPAB_DEKLARE_IJANS.includes(wòl), reyonMaks: wòl ? reyonMaksPouWòl(wòl) : null });
   } catch (e) {
     next(e);
   }
@@ -124,7 +115,7 @@ router.get("/mwen/wòl", requireAuth, async (req: AuthedRequest, res, next) => {
 
 router.get("/admin/tout", requireAuth, async (req: AuthedRequest, res, next) => {
   const wòl = await jwennWòl(req.userId!);
-  if (!wòl || !WÒL_KAPAB_DEKLARE.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
+  if (!wòl || !WÒL_KAPAB_DEKLARE_IJANS.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
   try {
     const { rows } = await pool.query(
       `SELECT d.id, d.tit, d.deskripsyon, d.reyon_km AS "reyonKm", d.aktif, d.kreye_nan AS "kreyeNan",
@@ -143,7 +134,7 @@ router.get("/admin/tout", requireAuth, async (req: AuthedRequest, res, next) => 
 // pi kritik pase silans), ak "poko reponn" (silans total).
 router.get("/:id/rapo", requireAuth, async (req: AuthedRequest, res, next) => {
   const wòl = await jwennWòl(req.userId!);
-  if (!wòl || !WÒL_KAPAB_DEKLARE.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
+  if (!wòl || !WÒL_KAPAB_DEKLARE_IJANS.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
   try {
     const { rows: anSekirite } = await pool.query(
       `SELECT u.id AS "userId", u.nom, u.telefon, r.kreye_nan AS "kreyeNan"
@@ -173,7 +164,7 @@ router.get("/:id/rapo", requireAuth, async (req: AuthedRequest, res, next) => {
 
 router.patch("/:id/dezaktive", requireAuth, async (req: AuthedRequest, res, next) => {
   const wòl = await jwennWòl(req.userId!);
-  if (!wòl || !WÒL_KAPAB_DEKLARE.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
+  if (!wòl || !WÒL_KAPAB_DEKLARE_IJANS.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
   try {
     await pool.query("UPDATE ijans_deklare SET aktif = false WHERE id = $1", [req.params.id]);
     res.json({ ok: true });

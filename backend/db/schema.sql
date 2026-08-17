@@ -305,3 +305,9 @@ CREATE TABLE IF NOT EXISTS alèt_meteyo (
 -- Foto pwofil itilizatè a (URL relatif, egzanp "/uploads/xxx.jpg") — reyitilize
 -- menm sistèm telechajman/estokaj foto rapò yo deja itilize.
 ALTER TABLE users ADD COLUMN IF NOT EXISTS foto_pwofil text;
+
+-- Zòn responsabilite pou wòl enstitisyonèl yo (egzanp non komin/seksyon
+-- kominal yon Kazèk dirije, oswa depatman yon Delege) — sèvi kòm referans
+-- pou admin jesyon otorite a, pa pou ranfòse otomatikman jewografi a (nou
+-- ranfòse sèlman limit reyon pou kounye a, gade backend/src/wol.ts).
+ALTER TABLE users ADD COLUMN IF NOT EXISTS zòn_responsabilite text;

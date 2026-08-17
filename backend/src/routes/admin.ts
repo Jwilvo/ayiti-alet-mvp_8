@@ -1,6 +1,8 @@
 import { Router } from "express";
+import { z } from "zod";
 import { pool } from "../pg";
 import { requireAdmin } from "../middleware/auth";
+import { WÒL_ENFO, reyonMaksPouWòl } from "../wol";
 
 const router = Router();
 router.use(requireAdmin);
@@ -232,6 +234,52 @@ router.post("/itilizate/:id/libere", async (req, res, next) => {
     );
 
     res.json({ ok: true, mesaj: "Kont lan libere — nimewo telefòn ak dokiman idantite disponib pou yon nouvo kont." });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// ============ Jesyon Otorite: wè/jere wòl ak zòn responsabilite yo ============
+
+router.get("/otorite/wol-enfo", (_req, res) => {
+  res.json(WÒL_ENFO);
+});
+
+router.get("/otorite", async (_req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, nom, telefon, wol AS "wòl", zòn_responsabilite AS "zònResponsabilite", kreye_nan AS "kreyeNan"
+       FROM users WHERE wol != 'sitwayen' ORDER BY wol, nom`
+    );
+    const konplè = rows.map((u) => ({ ...u, reyonMaksKm: reyonMaksPouWòl(u.wòl) }));
+    res.json(konplè);
+  } catch (e) {
+    next(e);
+  }
+});
+
+const asiyeWòlSchema = z.object({
+  wòl: z.enum(["sitwayen", "admin", "prezidans", "delege", "kazèk"]),
+  zònResponsabilite: z.string().optional(),
+});
+
+router.patch("/otorite/:id", async (req, res, next) => {
+  const parsed = asiyeWòlSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ erè: "Wòl envalid." });
+  const { wòl, zònResponsabilite } = parsed.data;
+
+  if (WÒL_ENFO[wòl]?.mandeZòn && !zònResponsabilite?.trim()) {
+    return res.status(400).json({ erè: `Wòl "${WÒL_ENFO[wòl].label}" mande yon zòn responsabilite (egzanp non komin).` });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE users SET wol = $1, zòn_responsabilite = $2 WHERE id = $3
+       RETURNING id, nom, telefon, wol AS "wòl", zòn_responsabilite AS "zònResponsabilite"`,
+      [wòl, zònResponsabilite?.trim() || null, req.params.id]
+    );
+    if (!rows[0]) return res.status(404).json({ erè: "Itilizatè a pa jwenn." });
+    res.json({ ...rows[0], reyonMaksKm: reyonMaksPouWòl(wòl) });
   } catch (e) {
     next(e);
   }

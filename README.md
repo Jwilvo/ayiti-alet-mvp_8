@@ -223,6 +223,12 @@ npm run dev          # http://localhost:5173
   wòl ak limit moun konekte a, e ranfòse limit la sou chan "Reyon" fòm deklarasyon an. Teste
   an dirèk konplè ak 4 senaryo: kazèk rejte pou 50km, aksepte pou 8km, prezidan aksepte 400km
   san limit, sitwayen òdinè rejte nèt akoz li pa gen wòl otorize.
+- ✅ **Panèl "Jesyon Otorite"**: pou wè AK jere kiyès genyen ki wòl, ak ki zòn responsabilite
+  yo (egzanp komin/seksyon kominal yon Kazèk). Sèl kont "admin" jeneral ka asiye wòl (baryè
+  sekirite kont pwomosyon pwòp tèt yo). Chèche yon itilizatè pa telefòn, asiye l yon wòl,
+  bay yon zòn si wòl la mande sa (Kazèk/Delege), e wè yon lis tout otorite yo aktyèl ak
+  limit reyon yo. Teste an dirèk soti a-z: enfo wòl yo, pwomosyon san zòn rejte, pwomosyon
+  ak zòn reyisi, lis konplè afiche kòrèkteman.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 
