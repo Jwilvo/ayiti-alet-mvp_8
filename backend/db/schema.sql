@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   komin           text,
   katye           text,
   niveau_konfyans integer NOT NULL DEFAULT 0,
-  wol             text NOT NULL DEFAULT 'sitwayen' CHECK (wol IN ('sitwayen', 'admin')),
+  wol             text NOT NULL DEFAULT 'sitwayen' CHECK (wol IN ('sitwayen', 'admin', 'prezidans', 'delege', 'kazèk')),
   kontak_ijans    jsonb NOT NULL DEFAULT '[]',
   kreye_nan       timestamptz NOT NULL DEFAULT now()
 );
@@ -213,7 +213,24 @@ CREATE INDEX IF NOT EXISTS lye_itilizatè_user_id_idx ON lye_itilizatè (user_id
 -- pita (egzanp pou otorite ki verifye idantite pandan yon ankèt ofisyèl).
 ALTER TABLE users ADD COLUMN IF NOT EXISTS non_konplè text;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS adrès_kay text;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_tip text CHECK (dokiman_tip IN ('NIF', 'CIN', 'Paspò'));
+ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_tip text CHECK (dokiman_tip IN ('CIN', 'Paspò', 'Permi Kondwi'));
+
+-- Si baz done a te deja gen kolòn ak ansyen kontrent (NIF), retire l e ajoute
+-- nouvo a — sa a nesesè paske PostgreSQL pa ajoute yon CHECK sou yon kolòn
+-- ki deja egziste ak "ADD COLUMN IF NOT EXISTS" (li ta sote nèt).
+DO $$
+BEGIN
+  ALTER TABLE users DROP CONSTRAINT IF EXISTS users_dokiman_tip_check;
+  ALTER TABLE users ADD CONSTRAINT users_dokiman_tip_check CHECK (dokiman_tip IN ('CIN', 'Paspò', 'Permi Kondwi'));
+END $$;
+
+-- Elaji wòl yo pou enkli wòl enstitisyonèl (pòte alèt selon nivo — gade
+-- backend/src/routes/ijans.ts pou lojik REYON_MAKS_PA_WÒL la).
+DO $$
+BEGIN
+  ALTER TABLE users DROP CONSTRAINT IF EXISTS users_wol_check;
+  ALTER TABLE users ADD CONSTRAINT users_wol_check CHECK (wol IN ('sitwayen', 'admin', 'prezidans', 'delege', 'kazèk'));
+END $$;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_ash text;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_chifre text;
 

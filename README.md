@@ -201,6 +201,28 @@ npm run dev          # http://localhost:5173
   Kont": chèche yon kont pa telefòn, "libere" li (efase modpas/imèl/dokiman, telefòn orijinal
   la vin lib) pou moun nan ka kreye yon **nouvo** kont ak yon lòt imèl. Teste an dirèk soti
   a-z: chèche → libere → menm telefòn reyisi enskri yon nouvo kont.
+- ✅ **Dokiman idantite mete ajou**: **NIF ranplase pa "Permi Kondwi"** (CIN, Paspò, Permi
+  Kondwi kounye a) — teste, ansyen valè NIF rejte. **Adrès kay kounye a obligatwa** — teste,
+  mesaj erè klè lè li manke.
+- ✅ **Verifikasyon dokiman idantite pa OCR (etap obligatwa)**: lè yon moun chwazi yon tip
+  dokiman pandan enskripsyon, li **dwe** telechaje yon foto li anvan l ka kontinye. Backend
+  la (`dokimanVerifikasyon.ts`, Tesseract.js — OCR gratis, san kle API) li tèks nan foto a
+  epi verifye: (1) non moun nan matche ak sa OCR jwenn nan (mesaj "non ou pa koresponn ak sa
+  ki nan dokiman otorize a" si non matche), (2) tip dokiman an matche ak mo kle atann pou
+  chak tip (mesaj "dokiman sa pa koresponn ak tip dokiman ou chwazi a" si li pa matche). **Foto
+  a pa janm konsève** — li efase imedyatman apre verifikasyon an, kèlkeswa rezilta a, pou
+  pwoteje vi prive. Lojik konparezon (non/tip) teste ak 4/4 senaryo reyisi. **Limit onèt**:
+  apèl OCR reyèl la pa t ka teste nan sandbox devlopman an (Tesseract.js telechaje done lang
+  li nan yon CDN ki bloke nan rezo sandbox mwen an, menm jan ak pwoblèm NOAA anvan an) — l ap
+  fonksyone sou Render kote pa gen menm restriksyon rezo. Presizyon OCR a depann de kalite
+  foto a (limyè, netete, ang) — se yon premye liy verifikasyon, pa yon sèvis KYC pwofesyonèl.
+- ✅ **Alèt selon wòl enstitisyonèl** (Prezidans, Delege, Kazèk, Admin): sistèm wòl la elaji
+  pou reflete otorite chak wòl genyen nan Leta a. Chak wòl gen yon **limit reyon maksimòm**
+  pou deklarasyon ijans: Prezidans = **nasyonal** (san limit), Delege = 150km (apeprè yon
+  depatman), Kazèk = **10km** (seksyon kominal), Admin (jeneral) = 500km. Panèl Admin montre
+  wòl ak limit moun konekte a, e ranfòse limit la sou chan "Reyon" fòm deklarasyon an. Teste
+  an dirèk konplè ak 4 senaryo: kazèk rejte pou 50km, aksepte pou 8km, prezidan aksepte 400km
+  san limit, sitwayen òdinè rejte nèt akoz li pa gen wòl otorize.
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 

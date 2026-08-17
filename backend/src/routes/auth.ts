@@ -2,11 +2,14 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import path from "path";
 import { z } from "zod";
 import { pool } from "../pg";
 import { AuthedRequest, JWT_SECRET, requireAuth } from "../middleware/auth";
 import { voyeImèl } from "../email";
 import { chifre, ashDokiman } from "../encryption";
+import { verifyeDokiman } from "../dokimanVerifikasyon";
+import { UPLOAD_DIR } from "./uploads";
 
 const router = Router();
 
@@ -30,9 +33,10 @@ const registerSchema = z.object({
   komin: z.string().optional(),
   katye: z.string().optional(),
   nonKonplè: z.string().min(3, "Bay non konplè, jan li ekri sou dokiman ofisyèl ou.").optional(),
-  dokimanTip: z.enum(["NIF", "CIN", "Paspò"], { errorMap: () => ({ message: "Chwazi yon tip dokiman valid." }) }).optional(),
+  dokimanTip: z.enum(["CIN", "Paspò", "Permi Kondwi"], { errorMap: () => ({ message: "Chwazi yon tip dokiman valid." }) }).optional(),
   dokimanNimewo: z.string().min(4, "Nimewo dokiman an dwe gen omwen 4 karaktè.").optional(),
-  adrèsKay: z.string().optional(),
+  dokimanFotoUrl: z.string().optional(),
+  adrèsKay: z.string({ required_error: "Adrès kay obligatwa." }).min(3, "Adrès kay obligatwa."),
 });
 
 router.post("/register", async (req, res, next) => {
@@ -41,11 +45,17 @@ router.post("/register", async (req, res, next) => {
     const premyèErè = parsed.error.errors[0]?.message ?? "Done yo pa valid.";
     return res.status(400).json({ erè: premyèErè, detay: parsed.error.flatten() });
   }
-  const { nom, telefon, email, motDePasse, komin, katye, nonKonplè, dokimanTip, dokimanNimewo, adrèsKay } = parsed.data;
+  const { nom, telefon, email, motDePasse, komin, katye, nonKonplè, dokimanTip, dokimanNimewo, dokimanFotoUrl, adrèsKay } = parsed.data;
 
   // Si youn nan (tip, nimewo) bay, tou de dwe bay ansanm.
   if ((dokimanTip && !dokimanNimewo) || (!dokimanTip && dokimanNimewo)) {
     return res.status(400).json({ erè: "Bay tou de tip dokiman an AK nimewo li." });
+  }
+
+  // Etap obligatwa pou plis sekirite: si moun nan chwazi yon tip dokiman, li
+  // DWE telechaje yon foto li pou verifikasyon anvan l ka kontinye.
+  if (dokimanTip && !dokimanFotoUrl) {
+    return res.status(400).json({ erè: "Telechaje yon foto dokiman ou a pou ka kontinye." });
   }
 
   try {
@@ -70,12 +80,23 @@ router.post("/register", async (req, res, next) => {
       dokimanChifre = chifre(dokimanNimewo);
     }
 
+    // Verifikasyon OCR: konpare foto dokiman an ak non/tip moun nan bay.
+    // Foto a efase otomatikman apre sa (gade dokimanVerifikasyon.ts).
+    if (dokimanTip && dokimanFotoUrl) {
+      const nonFichye = dokimanFotoUrl.replace(/^\/uploads\//, "");
+      const chminFichye = path.join(UPLOAD_DIR, nonFichye);
+      const rezilta = await verifyeDokiman(chminFichye, nonKonplè || nom, dokimanTip);
+      if (!rezilta.reyisi) {
+        return res.status(400).json({ erè: rezilta.erè ?? "Verifikasyon dokiman echwe." });
+      }
+    }
+
     const hash = await bcrypt.hash(motDePasse, 10);
     const { rows } = await pool.query(
       `INSERT INTO users (nom, telefon, email, mot_de_pass, komin, katye, non_konplè, dokiman_tip, dokiman_ash, dokiman_chifre, adrès_kay)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
        RETURNING id, nom, telefon, komin, katye, wol, niveau_konfyans, foto_pwofil`,
-      [nom, telefon, email ?? null, hash, komin ?? null, katye ?? null, nonKonplè ?? null, dokimanTip ?? null, dokimanAsh, dokimanChifre, adrèsKay ?? null]
+      [nom, telefon, email ?? null, hash, komin ?? null, katye ?? null, nonKonplè ?? null, dokimanTip ?? null, dokimanAsh, dokimanChifre, adrèsKay]
     );
     const user = rows[0];
 

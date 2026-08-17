@@ -200,17 +200,47 @@ export default function Kont() {
   const [telefon, setTelefon] = useState("");
   const [email, setEmail] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
-  const [dokimanTip, setDokimanTip] = useState<"" | "NIF" | "CIN" | "Paspò">("");
+  const [dokimanTip, setDokimanTip] = useState<"" | "CIN" | "Paspò" | "Permi Kondwi">("");
   const [dokimanNimewo, setDokimanNimewo] = useState("");
+  const [dokimanFotoUrl, setDokimanFotoUrl] = useState("");
+  const [dokimanFotoAnChaje, setDokimanFotoAnChaje] = useState(false);
   const [adrèsKay, setAdrèsKay] = useState("");
   const [loading, setLoading] = useState(false);
   const [erè, setErè] = useState("");
+  const dokimanInputRef = useRef<HTMLInputElement>(null);
+
+  async function chwaziFotoDokiman(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichye = e.target.files?.[0];
+    if (!fichye) return;
+    if (!fichye.type.startsWith("image/")) {
+      setErè("Chwazi yon imaj (JPEG, PNG, WEBP, GIF) pou foto dokiman an.");
+      return;
+    }
+    setErè("");
+    setDokimanFotoAnChaje(true);
+    try {
+      const { url } = await api.uploadFile(fichye);
+      setDokimanFotoUrl(url);
+    } catch (e: any) {
+      setErè(e.message);
+    } finally {
+      setDokimanFotoAnChaje(false);
+    }
+  }
 
   async function soumèt(e: React.FormEvent) {
     e.preventDefault();
     setErè("");
     if (mòd === "register" && !email.trim()) {
       setErè("Imèl obligatwa pou ka reyajiste modpas ou si w bliye l.");
+      return;
+    }
+    if (mòd === "register" && !adrèsKay.trim()) {
+      setErè("Adrès kay obligatwa.");
+      return;
+    }
+    if (mòd === "register" && dokimanTip && !dokimanFotoUrl) {
+      setErè("Telechaje yon foto dokiman ou a pou ka kontinye.");
       return;
     }
     setLoading(true);
@@ -226,7 +256,8 @@ export default function Kont() {
               nonKonplè: nonKonplè || undefined,
               dokimanTip: dokimanTip || undefined,
               dokimanNimewo: dokimanNimewo || undefined,
-              adrèsKay: adrèsKay || undefined,
+              dokimanFotoUrl: dokimanFotoUrl || undefined,
+              adrèsKay,
             });
       saveSession(res.token, res.user);
       setUser(res.user);
@@ -284,17 +315,42 @@ export default function Kont() {
                   <input value={nonKonplè} onChange={(e) => setNonKonplè(e.target.value)} placeholder="Jan Batis Pyè" />
 
                   <label>Tip dokiman idantite</label>
-                  <select value={dokimanTip} onChange={(e) => setDokimanTip(e.target.value as any)}>
+                  <select value={dokimanTip} onChange={(e) => { setDokimanTip(e.target.value as any); setDokimanFotoUrl(""); }}>
                     <option value="">— Chwazi —</option>
-                    <option value="NIF">NIF</option>
                     <option value="CIN">CIN</option>
                     <option value="Paspò">Paspò</option>
+                    <option value="Permi Kondwi">Permi Kondwi</option>
                   </select>
 
                   {dokimanTip && (
                     <>
                       <label>Nimewo {dokimanTip} la</label>
                       <input value={dokimanNimewo} onChange={(e) => setDokimanNimewo(e.target.value)} placeholder="Nimewo dokiman an" />
+
+                      <label>Foto {dokimanTip} la *</label>
+                      <p style={{ fontSize: 11.5, color: "var(--text-muted)", marginTop: -8, marginBottom: 8 }}>
+                        Obligatwa — nou verifye non ak tip dokiman an sou foto a. Foto a
+                        <strong> efase imedyatman</strong> apre verifikasyon, li pa konsève.
+                      </p>
+                      {dokimanFotoUrl ? (
+                        <div className="banner banner-ok" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span>✔ Foto telechaje</span>
+                          <button type="button" className="btn btn-ghost" style={{ padding: "5px 10px", fontSize: 12 }} onClick={() => { setDokimanFotoUrl(""); if (dokimanInputRef.current) dokimanInputRef.current.value = ""; }}>
+                            Chanje
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-block"
+                          onClick={() => dokimanInputRef.current?.click()}
+                          disabled={dokimanFotoAnChaje}
+                          style={{ marginBottom: 12 }}
+                        >
+                          {dokimanFotoAnChaje ? <span className="spinner" /> : `📷 Telechaje foto ${dokimanTip} la`}
+                        </button>
+                      )}
+                      <input ref={dokimanInputRef} type="file" accept="image/*" onChange={chwaziFotoDokiman} style={{ display: "none" }} />
                     </>
                   )}
 
@@ -304,8 +360,8 @@ export default function Kont() {
                     Obligatwa — se sa nou itilize pou voye kòd reyajisman si w bliye modpas ou.
                   </p>
 
-                  <label>Adrès kay (opsyonèl)</label>
-                  <input value={adrèsKay} onChange={(e) => setAdrèsKay(e.target.value)} placeholder="Egzanp: Ri Kapwa, Delmas 33" />
+                  <label>Adrès kay *</label>
+                  <input required value={adrèsKay} onChange={(e) => setAdrèsKay(e.target.value)} placeholder="Egzanp: Ri Kapwa, Delmas 33" />
                 </>
               )}
               <label>Nimewo telefòn</label>

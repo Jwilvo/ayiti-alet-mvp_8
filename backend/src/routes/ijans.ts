@@ -6,6 +6,22 @@ import { voyeNotifikasyon } from "../firebase";
 
 const router = Router();
 
+// Limit reyon (km) selon wòl enstitisyonèl la — sa reflete nivo otorite chak
+// wòl genyen nan Leta a. "null" vle di "nasyonal", san limit reyon.
+const REYON_MAKS_PA_WÒL: Record<string, number | null> = {
+  admin: 500,
+  prezidans: null, // nasyonal
+  delege: 150, // apeprè gwosè yon depatman
+  kazèk: 10, // seksyon kominal — 5-10km jan sa dekri nan estrikti a
+};
+
+const WÒL_KAPAB_DEKLARE = Object.keys(REYON_MAKS_PA_WÒL);
+
+async function jwennWòl(userId: string): Promise<string | null> {
+  const { rows } = await pool.query("SELECT wol FROM users WHERE id = $1", [userId]);
+  return rows[0]?.wol ?? null;
+}
+
 // ============ Sitwayen ============
 
 // Ijans aktif ki toupre yon pozisyon bay (pou Akèy la ka montre bandwo a).
@@ -62,12 +78,23 @@ const deklareSchema = z.object({
 });
 
 router.post("/", requireAuth, async (req: AuthedRequest, res, next) => {
-  const wòl = await pool.query("SELECT wol FROM users WHERE id = $1", [req.userId]);
-  if (wòl.rows[0]?.wol !== "admin") return res.status(403).json({ erè: "Sèlman admin ka deklare yon ijans." });
+  const wòl = await jwennWòl(req.userId!);
+  if (!wòl || !WÒL_KAPAB_DEKLARE.includes(wòl)) {
+    return res.status(403).json({ erè: "Ou pa gen otorizasyon pou deklare yon ijans." });
+  }
 
   const parsed = deklareSchema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ erè: "Done envalid pou deklarasyon ijans lan." });
   const { tit, deskripsyon, latitude, longitude, reyonKm } = parsed.data;
+
+  // Ranfòse limit reyon an selon wòl moun nan — egzanp yon "kazèk" pa ka
+  // voye yon alèt ki kouvri tout peyi a, sèlman seksyon kominal li a (5-10km).
+  const reyonMaks = REYON_MAKS_PA_WÒL[wòl];
+  if (reyonMaks !== null && reyonKm > reyonMaks) {
+    return res.status(403).json({
+      erè: `Wòl ou (${wòl}) limite a yon reyon maksimòm ${reyonMaks}km. Sèlman "prezidans" ka voye alèt nasyonal.`,
+    });
+  }
 
   try {
     const { rows } = await pool.query(
@@ -86,9 +113,18 @@ router.post("/", requireAuth, async (req: AuthedRequest, res, next) => {
   }
 });
 
+router.get("/mwen/wòl", requireAuth, async (req: AuthedRequest, res, next) => {
+  try {
+    const wòl = await jwennWòl(req.userId!);
+    res.json({ wòl, kapabDeklare: !!wòl && WÒL_KAPAB_DEKLARE.includes(wòl), reyonMaks: wòl ? REYON_MAKS_PA_WÒL[wòl] : null });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get("/admin/tout", requireAuth, async (req: AuthedRequest, res, next) => {
-  const wòl = await pool.query("SELECT wol FROM users WHERE id = $1", [req.userId]);
-  if (wòl.rows[0]?.wol !== "admin") return res.status(403).json({ erè: "Aksè refize." });
+  const wòl = await jwennWòl(req.userId!);
+  if (!wòl || !WÒL_KAPAB_DEKLARE.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
   try {
     const { rows } = await pool.query(
       `SELECT d.id, d.tit, d.deskripsyon, d.reyon_km AS "reyonKm", d.aktif, d.kreye_nan AS "kreyeNan",
@@ -106,8 +142,8 @@ router.get("/admin/tout", requireAuth, async (req: AuthedRequest, res, next) => 
 // Rapò kategorize an TWA gwoup: "wi" (an sekirite), "non" (bezwen èd — sa a
 // pi kritik pase silans), ak "poko reponn" (silans total).
 router.get("/:id/rapo", requireAuth, async (req: AuthedRequest, res, next) => {
-  const wòl = await pool.query("SELECT wol FROM users WHERE id = $1", [req.userId]);
-  if (wòl.rows[0]?.wol !== "admin") return res.status(403).json({ erè: "Aksè refize." });
+  const wòl = await jwennWòl(req.userId!);
+  if (!wòl || !WÒL_KAPAB_DEKLARE.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
   try {
     const { rows: anSekirite } = await pool.query(
       `SELECT u.id AS "userId", u.nom, u.telefon, r.kreye_nan AS "kreyeNan"
@@ -136,8 +172,8 @@ router.get("/:id/rapo", requireAuth, async (req: AuthedRequest, res, next) => {
 });
 
 router.patch("/:id/dezaktive", requireAuth, async (req: AuthedRequest, res, next) => {
-  const wòl = await pool.query("SELECT wol FROM users WHERE id = $1", [req.userId]);
-  if (wòl.rows[0]?.wol !== "admin") return res.status(403).json({ erè: "Aksè refize." });
+  const wòl = await jwennWòl(req.userId!);
+  if (!wòl || !WÒL_KAPAB_DEKLARE.includes(wòl)) return res.status(403).json({ erè: "Aksè refize." });
   try {
     await pool.query("UPDATE ijans_deklare SET aktif = false WHERE id = $1", [req.params.id]);
     res.json({ ok: true });

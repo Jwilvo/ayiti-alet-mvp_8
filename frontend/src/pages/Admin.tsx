@@ -169,17 +169,25 @@ function IjansPanel() {
   const [tit, setTit] = useState("");
   const [deskripsyon, setDeskripsyon] = useState("");
   const [pwen, setPwen] = useState<{ lat: number; lng: number } | null>(null);
-  const [reyonKm, setReyonKm] = useState(50);
+  const [reyonKm, setReyonKm] = useState(10);
   const [chaje, setChaje] = useState(false);
   const [erè, setErè] = useState("");
   const [rapòOuvri, setRapòOuvri] = useState<string | null>(null);
   const [rapòDone, setRapòDone] = useState<IjansRapò | null>(null);
   const [rapòChaje, setRapòChaje] = useState(false);
+  const [wòlInfo, setWòlInfo] = useState<{ wòl: string | null; reyonMaks: number | null } | null>(null);
 
   function chajeLis() {
     api.adminListIjans().then(setLis).catch((e) => setErè(e.message));
   }
   useEffect(chajeLis, []);
+  useEffect(() => {
+    api.ijansMwenWòl().then((info) => {
+      setWòlInfo(info);
+      if (info.reyonMaks !== null) setReyonKm(Math.min(reyonKm, info.reyonMaks));
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function deklare() {
     if (!tit.trim() || !pwen) {
@@ -306,6 +314,15 @@ function IjansPanel() {
         </div>
       ))}
 
+      {wòlInfo?.wòl && (
+        <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: -8, marginBottom: 12 }}>
+          Wòl ou: <strong>{wòlInfo.wòl}</strong> —{" "}
+          {wòlInfo.reyonMaks === null
+            ? "ou ka voye alèt nasyonal, san limit reyon."
+            : `limite a yon reyon maksimòm ${wòlInfo.reyonMaks}km.`}
+        </p>
+      )}
+
       {mòd ? (
         <div className="card">
           <label>Tit ijans lan</label>
@@ -320,8 +337,14 @@ function IjansPanel() {
             pickedLocation={pwen}
             onPickLocation={(lat, lng) => setPwen({ lat, lng })}
           />
-          <label>Reyon (km)</label>
-          <input type="number" value={reyonKm} onChange={(e) => setReyonKm(Number(e.target.value))} min={1} max={500} />
+          <label>Reyon (km){wòlInfo?.reyonMaks !== null && wòlInfo?.reyonMaks !== undefined && ` — maksimòm ${wòlInfo.reyonMaks}km pou wòl ou`}</label>
+          <input
+            type="number"
+            value={reyonKm}
+            onChange={(e) => setReyonKm(Number(e.target.value))}
+            min={1}
+            max={wòlInfo?.reyonMaks ?? 500}
+          />
           <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
             <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setMòd(false)}>Anile</button>
             <button className="btn btn-primary" style={{ flex: 1 }} onClick={deklare} disabled={chaje}>

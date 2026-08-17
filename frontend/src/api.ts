@@ -110,7 +110,7 @@ export const api = {
 
   register: (body: {
     nom: string; telefon: string; motDePasse: string; email: string; komin?: string; katye?: string;
-    nonKonplè?: string; dokimanTip?: "NIF" | "CIN" | "Paspò"; dokimanNimewo?: string; adrèsKay?: string;
+    nonKonplè?: string; dokimanTip?: "CIN" | "Paspò" | "Permi Kondwi"; dokimanNimewo?: string; dokimanFotoUrl?: string; adrèsKay: string;
   }) =>
     request<{ token: string; user: CurrentUser }>("/auth/register", { method: "POST", body: JSON.stringify(body) }),
 
@@ -210,6 +210,7 @@ export const api = {
   adminListIjans: () => request<IjansAdmin[]>("/ijans/admin/tout"),
   adminDezaktiveIjans: (id: string) => request<{ ok: boolean }>(`/ijans/${id}/dezaktive`, { method: "PATCH" }),
   ijansRapò: (id: string) => request<IjansRapò>(`/ijans/${id}/rapo`),
+  ijansMwenWòl: () => request<{ wòl: string | null; kapabDeklare: boolean; reyonMaks: number | null }>("/ijans/mwen/wòl"),
 
   adminChècheItilizatè: (telefon: string) =>
     request<{ id: string; nom: string; telefon: string; email: string | null; komin?: string; katye?: string; kreyeNan: string; genDokiman: boolean }>(
