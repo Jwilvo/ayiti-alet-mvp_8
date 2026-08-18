@@ -225,11 +225,16 @@ BEGIN
 END $$;
 
 -- Elaji wòl yo pou enkli wòl enstitisyonèl (pòte alèt selon nivo — gade
--- backend/src/routes/ijans.ts pou lojik REYON_MAKS_PA_WÒL la).
+-- backend/src/wol.ts pou lojik konplè a, ki verifye ak vrè estrikti
+-- administratif Ayiti a: Prezidans/Premye Minis (nasyonal), Delege
+-- Depatmantal, Vis-Delege Awondisman, Majistra Komin, Kazèk/ASEC Seksyon
+-- Kominal).
 DO $$
 BEGIN
   ALTER TABLE users DROP CONSTRAINT IF EXISTS users_wol_check;
-  ALTER TABLE users ADD CONSTRAINT users_wol_check CHECK (wol IN ('sitwayen', 'admin', 'prezidans', 'delege', 'kazèk'));
+  ALTER TABLE users ADD CONSTRAINT users_wol_check CHECK (
+    wol IN ('sitwayen', 'admin', 'prezidans', 'premye_minis', 'minis_enteryè', 'minis_jistis', 'minis_defans', 'minis_sante', 'minis_afè_etranjè', 'minis_edikasyon', 'minis_agrikilti', 'minis_travo_piblik', 'minis_komès', 'minis_afè_sosyal', 'minis_kilti', 'minis_jenès', 'minis_planifikasyon', 'minis_tourism', 'minis_anviwonman', 'minis_kondisyon_feminen', 'minis_ayisyen_aletranje', 'minis_ekonomi', 'delege', 'vis_delege', 'majistra', 'kazèk', 'asek')
+  );
 END $$;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_ash text;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS dokiman_chifre text;

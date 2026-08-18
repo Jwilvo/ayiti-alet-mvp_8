@@ -259,7 +259,13 @@ router.get("/otorite", async (_req, res, next) => {
 });
 
 const asiyeWòlSchema = z.object({
-  wòl: z.enum(["sitwayen", "admin", "prezidans", "delege", "kazèk"]),
+  wòl: z.enum([
+    "sitwayen", "admin", "prezidans", "premye_minis", "minis_enteryè", "minis_jistis",
+    "minis_defans", "minis_sante", "minis_afè_etranjè", "minis_edikasyon", "minis_agrikilti",
+    "minis_travo_piblik", "minis_komès", "minis_afè_sosyal", "minis_kilti", "minis_jenès",
+    "minis_planifikasyon", "minis_tourism", "minis_anviwonman", "minis_kondisyon_feminen",
+    "minis_ayisyen_aletranje", "minis_ekonomi", "delege", "vis_delege", "majistra", "kazèk", "asek",
+  ]),
   zònResponsabilite: z.string().optional(),
 });
 

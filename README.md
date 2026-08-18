@@ -229,6 +229,26 @@ npm run dev          # http://localhost:5173
   bay yon zòn si wòl la mande sa (Kazèk/Delege), e wè yon lis tout otorite yo aktyèl ak
   limit reyon yo. Teste an dirèk soti a-z: enfo wòl yo, pwomosyon san zòn rejte, pwomosyon
   ak zòn reyisi, lis konplè afiche kòrèkteman.
+- ✅ **Ekstansyon Wòl Enstitisyonèl**: elaji de 3 a **9 wòl** ki koresponn ak vrè estrikti
+  administratif Ayiti a (verifye ak Dekrè MICT sou Seksyon Kominal ak Lwa Elektoral 1999):
+  Prezidans/Premye Minis (nasyonal), Delege Depatmantal (150km), Vis-Delege Awondisman
+  (75km), Majistra/Meri Komin (25km), Kazèk/CASEC ak Manm ASEC Seksyon Kominal (10km).
+  Nòt: pòs Prezidan an vid depi 7 fevriye 2026 (Konsèy Prezidansyèl Tranzisyon an te sispann)
+  — sistèm nan reprezante **enstitisyon** an, pa yon moun espesifik, kidonk sa pa afekte
+  fonksyonalite a. Frontend la li lis wòl yo dinamikman nan API a, kidonk **pa gen chanjman
+  kòd frontend** ki te nesesè. Teste an dirèk: Majistra rejte pou 100km, aksepte pou 20km.
+- ✅ **18 Gran Minis Ajoute**: elaji sistèm wòl la ankò pou enkli tout pòtfèy minis nan
+  Konsèy Minis aktyèl la (Enteryè, Jistis, Defans, Sante/MSPP, Afè Etranjè, Edikasyon,
+  Agrikilti/MARNDR, Travo Piblik/MTPTC, Komès/MCI, Afè Sosyal/MAST, Kilti, Jenès ak Espò,
+  Planifikasyon/MPCE, Tourism, Anviwonman, Kondisyon Feminen, Ayisyen Aletranje/MHAVE,
+  Ekonomi/MEF) — **27 wòl total** kounye a. Tankou Prezidans, chak minis gen **pòte
+  nasyonal** (san limit reyon), paske se konsa enstitisyon sa yo reyèlman opere. Non moun
+  ki okipe chak pòs yo **pa enkli** — sonje 11 nouvo minis te nome nan yon ranyman 2 mas
+  2026, kidonk non chanje twò souvan pou nou ta ka kenbe yo ajou. **🐛 Bug kritik jwenn e
+  korije pandan tès**: yon operatè `??` te konfonn `null` (nasyonal) ak "wòl pa egziste",
+  ki te fè TOUT wòl nasyonal yo (Prezidans, Premye Minis, tout 18 minis) rive limite a 0km
+  pa aksidan. Korije e reteste konplètman — Minis Sante reyisi deklare 300km apre koreksyon
+  an, san afekte lòt wòl limite yo (Kazèk toujou 10km, Delege toujou 150km).
 - ✅ PWA (enstalasyon san app store) + pwojè Android/iOS natif (Capacitor)
 - ✅ Sekirite: rate limiting, helmet, tokèn SOS
 
